@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>pixi.js example 7 transparency</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+        }
+
+        .textHolder{
+            width: 400px;
+        }
+    </style>
+    <script src="../../bin/pixi.dev.js"></script>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+</head>
+<body>
+<script>
+
+var mouse = {x: 0, y: 0};
+	//Get the mouse Position
+	document.addEventListener('mousemove', function(e){ 
+    mouse.x = e.clientX || e.pageX; 
+    mouse.y = e.clientY || e.pageY 
+	//document.write("<div>"+mouse.x+"</div>");
+	//document.write("<div>"+mouse.y+"</div>");
+
+	}, false);
+document.write("<p id='coordinates'>TEXT</p>");
+	//changes the coordinates on screen
+	document.getElementsByTagName("html").onmousemove = function(event) {
+	evt = (evt) ? evt : ((window.event) ? window.event : "");
+	var elem = (evt.target) ? evt.target : evt.srcElement;
+	document.getElementById('coordinates').innerHTML = 'pageX ' + evt.pageX + ' pageY ' + evt.pageY + 
+		' clientX ' + evt.clientX + ' clientY ' + evt.clientY + ' und Sie halten ' + evt.button;
+}
+    
+
+    // create an new instance of a pixi stage
+    var stage = new PIXI.Stage(0x66FF99);
+	var width = $(window).width();
+	var height=$(window).height();
+	// create a renderer instance
+	var renderer = PIXI.autoDetectRenderer(width, height, {transparent:true});
+
+    // add the renderer view element to the DOM
+    document.body.appendChild(renderer.view);
+    renderer.view.style.position = "absolute";
+    renderer.view.style.top = "0px";
+    renderer.view.style.left = "0px";
+
+    // create a texture from an image path
+    var texture = PIXI.Texture.fromImage("bunny.png");
+
+    // create a new Sprite using the texture
+    var bunny = new PIXI.Sprite(texture);
+
+    // center the sprite's anchor point
+    bunny.anchor.x = 0.5;
+    bunny.anchor.y = 0.5;
+
+    // move the sprite to the center of the screen
+    bunny.position.x = 200;
+    bunny.position.y = 150;
+
+    stage.addChild(bunny);
+
+    function animate() {
+        requestAnimFrame(animate);
+		bunny.position.x = mouse.x;
+		bunny.position.y=mouse.y;
+
+       if(mouse.x<width){
+	//document.write("<div>"+mouse.x+"</div>");
+			bunny.rotation -=0.001*mouse.x;
+		}else if(mouse.x>width){
+		    bunny.rotation += 0.001*mouse.x;
+		}
+
+        // render the stage
+        renderer.render(stage);
+    }
+
+    requestAnimFrame(animate);
+    </script>
+
+    </body>
+</html>
