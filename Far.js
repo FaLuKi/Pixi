@@ -62,7 +62,17 @@ function Scroller(stage) {
 	
 	this.char = new Character("resources/char.png");
 	
+	// create a text object with a nice stroke
+	this.score = new PIXI.Text("0", {font: "bold 32px Podkova", fill: "#ffffff", align: "center", stroke: "#000000", strokeThickness: 6});
+	// setting the anchor point to 0.5 will center align the text... great for spinning!
+	// this.score.anchor.x = this.score.anchor.y = 0.5;
+	this.score.anchor.x = 1;
+	this.score.position.x = 512;
+	this.score.position.y = 5;
+	
+	stage.addChild(this.score);
 	// stage.addChild(this.char);
+	
 	
 	this.viewportX = 0;
 	
@@ -76,6 +86,7 @@ Scroller.prototype.setViewportX = function(viewportX) {
 	this.mid.setViewportX(viewportX);
 	this.front.setViewportX(viewportX);
 	this.char.setViewportX(viewportX);
+	this.score.setText(Math.round(viewportX));
 };
 
 Scroller.prototype.moveViewportXBy = function(units) {
@@ -127,6 +138,7 @@ function Character(texture){
 	this.jumpsound = new Audio("resources/sound/jump.m4a");
 	this.walksound = new Audio("resources/sound/concrete1.wav");
 	this.walksound.loop = true;
+	this.walksound.volume = 0.5;
 		
 	// up.press = this.char.jumpDown(this.char);
 	this.up.release = this.jumpUp;
@@ -781,13 +793,13 @@ MapBuilder.WALL_HEIGHTS = [
 ];
 
 MapBuilder.prototype.createMap = function() {
-	this.createWallSpan(3, 9, true);
+  this.createWallSpan(3, 9, true);
   this.createGap(1);
   this.createWallSpan(1, 30);
   this.createGap(1);
   this.createWallSpan(2, 18);
   this.createGap(1);
-  this.createSteppedWallSpan(2, 5, 28);
+  this.createSteppedWallSpan(2, 5, 10);
   this.createGap(1);
   this.createWallSpan(1, 10);
   this.createGap(1);
@@ -812,10 +824,36 @@ MapBuilder.prototype.createMap = function() {
   this.createWallSpan(3, 8);
   this.createGap(2);
   this.createSteppedWallSpan(3, 5, 12);
+  this.createGap(2);
+  this.createWallSpan(2, 8);
+  this.createGap(2);
+  this.createWallSpan(1, 10);
+  this.createGap(2);
+  this.createWallSpan(2, 8);
+  this.createGap(2);
+   this.createSteppedWallSpan(3, 10, 3);
+  this.createGap(2);
+  this.createWallSpan(0, 9);
+  this.createGap(2);
+  this.createWallSpan(1, 12);
+  this.createGap(2);
+  this.createWallSpan(2, 5);
+  this.createGap(2);
+  this.createWallSpan(3, 10);
+  this.createGap(2);
+  this.createWallSpan(4, 2);
   this.createGap(3);
-  this.createWallSpan(0, 8);
+  this.createWallSpan(4, 6);
+  this.createGap(4);
+  this.createWallSpan(0, 15);
   this.createGap(3);
-  this.createWallSpan(1, 50);
+  this.createWallSpan(1, 7);
+  this.createGap(3);
+  this.createWallSpan(2, 11);
+  this.createGap(3);
+  this.createSteppedWallSpan(4, 8, 10);
+  this.createGap(3);
+  this.createWallSpan(2, 11);
   this.createGap(20);
 };
 
