@@ -106,14 +106,14 @@ function Character(texture){
 	this.position.y = 0;
 	this.viewportX = 0;
 	this.fallspeed = 3;
-	this.jumpspeed = 10;
+	this.jumpspeed = 5;
 	this.jumplength = 20;
 	this.lastJump = -1;
 	
-	this.walkcycle = ["walk_01", "walk_02", "walk_03"];
+	this.walkcycle = ["walk_01", "walk_02", "walk_03", "walk_04", "walk_05", "walk_06", "walk_07", "walk_08", "walk_09", "walk_10",];
 	this.lastWalkCycleFrame = -1;
 	this.currentCycleFrame = -1;
-	this.walkCycleThresh = 20;
+	this.walkCycleThresh = 10;
 	
 	this.jumpcycle = ["jump_01", "jump_02"];
 	this.lastjumpCycleFrame = -1;
@@ -169,7 +169,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 			state = "jumping";
 		}
 		
-		if(newViewportX - this.lastJump > this.jumplength && this.jumplength != -1){
+		if(newViewportX - this.lastJump > (this.jumplength * main.scrollSpeed) && this.jumplength != -1){
 			state = "falling";
 		}
 		
@@ -250,6 +250,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 					this.currentCycleFrame = 0;
 				}
 				this.sprite = PIXI.Sprite.fromFrame(this.walkcycle[this.currentCycleFrame]);
+				// console.log(this.sprite);
 				this.sprite.position.x = this.position.x;
 				this.sprite.position.y = this.position.y;
 				this.sprite.viewportX = this.viewportX;
@@ -319,8 +320,8 @@ function Main() {
 Main.constructor = Main;
 // Main.SCROLL_SPEED = 5;
 Main.MIN_SCROLL_SPEED = 2;
-Main.MAX_SCROLL_SPEED = 2;
-Main.SCROLL_ACCELERATION = 0.005;
+Main.MAX_SCROLL_SPEED = 10;
+Main.SCROLL_ACCELERATION = 0.0015;
 
 Main.prototype.update = function() {
 	// this.scroller.moveViewportXBy(this.SCROLL_SPEED);
