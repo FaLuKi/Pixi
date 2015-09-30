@@ -1,4 +1,4 @@
-//Global vars
+﻿//Global vars
 var TileHeight;
 
 var state;
@@ -62,7 +62,12 @@ function Scroller(stage) {
 	
 	this.char = new Character("resources/char.png");
 	
+	this.enemyPool = [];
+	this.enemyPool.push(new Enemy(1450,1));
+	this.enemyPool.push(new Enemy(300,-2.5));
+	
 	// create a text object with a nice stroke
+	this.scoreCount = -1;
 	this.score = new PIXI.Text("0", {font: "bold 32px Podkova", fill: "#ffffff", align: "center", stroke: "#000000", strokeThickness: 6});
 	// setting the anchor point to 0.5 will center align the text... great for spinning!
 	// this.score.anchor.x = this.score.anchor.y = 0.5;
@@ -72,6 +77,12 @@ function Scroller(stage) {
 	
 	stage.addChild(this.score);
 	// stage.addChild(this.char);
+	
+	this.health = new PIXI.Text("0", {font: "bold 32px Podkova", fill: "#ffffff", align: "center", stroke: "#000000", strokeThickness: 6});
+	this.health.position.x = 5;
+	this.health.position.y = 5;
+	
+	stage.addChild(this.health);
 	
 	
 	this.viewportX = 0;
@@ -86,7 +97,11 @@ Scroller.prototype.setViewportX = function(viewportX) {
 	this.mid.setViewportX(viewportX);
 	this.front.setViewportX(viewportX);
 	this.char.setViewportX(viewportX);
-	this.score.setText(Math.round(viewportX));
+	for (var value of this.enemyPool){
+		value.setViewportX(viewportX);
+	}
+	if(state != "dead")	this.score.setText(++this.scoreCount);
+	this.health.setText(this.char.health);
 };
 
 Scroller.prototype.moveViewportXBy = function(units) {
@@ -98,6 +113,111 @@ Scroller.prototype.getViewportX = function() {
 	return this.viewportX;
 };
 
+//###############
+//Enemy
+
+function Enemy(pos,walkspeed){
+	// var firstX = -(main.scroller.viewportX % 64);
+	this.start = pos;
+	this.sprite = null;
+	
+	this.position = {};
+	this.position.x = 0;
+	this.position.y = 0;
+	
+	this.walkspeed = walkspeed;
+	this.fallspeed = 5;
+	
+	this.viewportX = 0;
+	
+	this.offsetY = -15;
+	
+	this.state = "walking";
+}
+
+Enemy.prototype.setViewportX = function(newViewportX) {
+	this.viewportX = newViewportX;
+	if(this.start - newViewportX <= 0){
+		var offsetY = 0;
+		if(this.sprite == null){
+			this.sprite = PIXI.Sprite.fromFrame("enemy_01");
+			if(this.walkspeed < 0){
+				this.sprite.scale.x = -1;
+				this.sprite.anchor.x = 1;
+			}
+			main.stage.addChild(this.sprite);
+			this.setPosX(512);
+			
+			var sliceW = Math.floor(512 / 64);
+			var slices = main.scroller.front.slices;
+			var sliceHeight = slices[main.scroller.front.viewportSliceX + sliceW].y || -1;
+			// console.log(sliceHeight);
+			offsetY = sliceHeight + this.offsetY;
+			this.setPosY(offsetY);
+		}
+		// var mod = this.walkingspeed >= 0 ? -1 : 0;
+		var slice1 = main.scroller.front.slices[Math.round(main.scroller.front.viewportSliceX + ( this.position.x / 64))].y || -1;
+		var slice2 = main.scroller.front.slices[Math.ceil(main.scroller.front.viewportSliceX + ( this.position.x / 64))].y || -1;
+		var currentSliceHeight = (slice1 + slice2) / 2; // = slice1 < slice2 ? slice2 : slice1;
+		if(slice1 == -1 || slice2 ==-1){
+			currentSliceHeight = -1;
+		}else{
+			if(this.walkspeed >=0){
+				currentSliceHeight = slice1 > slice2 ? slice2 : slice1;
+				if(slice1 < slice2) this.walkspeed = 0;
+			}else{
+				currentSliceHeight = slice1 < slice2 ? slice2 : slice1;
+			}
+		}
+		// console.log("Enemy: " + Math.floor(main.scroller.front.viewportSliceX + ( this.position.x / 64)) + "	" + currentSliceHeight);
+		if(this.position.x < - 60 || this.position.y > 368){
+			this.destroy();
+		}
+		
+		//move enemy in x-axis
+		this.setPosX(this.position.x - (this.walkspeed + main.scrollSpeed));
+		
+		if(currentSliceHeight <= -1 || this.state == "falling"){
+			this.state = "falling";
+			this.setPosY(this.position.y + this.fallspeed);
+		}else{
+			offsetY = currentSliceHeight + this.offsetY;
+			if ( (offsetY - this.fallspeed - 1) < this.position.y){
+				//character is between falling speed and walking height
+				if (!(this.walkspeed == 0))	this.setPosY(offsetY);
+			}else{
+				this.setPosY(this.position.y + this.fallspeed);
+			}
+		}
+		
+		if(this.isColliding()){
+			main.scroller.char.takeDamage();
+		}
+	}
+}
+
+Enemy.prototype.isColliding = function(){
+	var char = main.scroller.char;
+	return !(char.position.x > (this.position.x + this.sprite.width) || (char.position.x + char.sprite.width) < this.position.x || 
+		char.position.y > (this.position.y + this.sprite.height) || (char.position.y + char.sprite.height) < this.position.y);
+}
+
+Enemy.prototype.setPosY = function(pos){
+	this.position.y = pos;
+	this.sprite.position.y = pos;
+}
+
+Enemy.prototype.destroy = function(pos){
+	main.stage.removeChild(this.sprite);
+			
+	var index = main.scroller.enemyPool.indexOf(this);
+	if(index > -1)	main.scroller.enemyPool.splice(index, 1);
+}
+
+Enemy.prototype.setPosX = function(pos){
+	this.position.x = pos;
+	this.sprite.position.x = pos;
+}
 //###############
 //character
 
@@ -118,7 +238,7 @@ function Character(texture){
 	this.viewportX = 0;
 	this.fallspeed = 3;
 	this.jumpspeed = 5;
-	this.jumplength = 20;
+	this.jumplength = 30;
 	this.lastJump = -1;
 	
 	this.walkcycle = ["walk_01", "walk_02", "walk_03", "walk_04", "walk_05", "walk_06", "walk_07", "walk_08", "walk_09", "walk_10",];
@@ -139,12 +259,30 @@ function Character(texture){
 	this.walksound = new Audio("resources/sound/concrete1.wav");
 	this.walksound.loop = true;
 	this.walksound.volume = 0.5;
+	
+	this.health = 2;
+	this.invulTime = 5;
+	this.isInvul = false;
 		
 	// up.press = this.char.jumpDown(this.char);
 	this.up.release = this.jumpUp;
 }
 // Character.constructor = Character;
 // Character.prototype = Object.create(PIXI.Sprite.prototype);
+
+
+Character.prototype.takeDamage = function(){
+	if(this.isInvul || state =="dead") return;
+	if(--this.health <= 0){
+		this.health = 0;
+		state = "dead";
+		return;
+	}
+	this.isInvul = true;
+	setTimeout(function(){
+		this.isInvul = false;
+	}, this.invulTime * 1000);
+}
 
 Character.prototype.setPosY = function(pos){
 	this.position.y = pos;
@@ -168,7 +306,7 @@ Character.prototype.jumpUp = function(){
 Character.prototype.setViewportX = function(newViewportX) {
 	this.viewportX = newViewportX;
 	// console.log(this.position.y + "	" + this.sprite.position.y);
-	if( (state == "play" || state == "jumping" || this.jumplength == -1) && this.up.isDown){
+	if( (state == "play" || state == "jumping" || this.jumplength == -1)&& this.up.isDown){
 		this.walksound.pause();
 		if(state == "play" ){
 			state = "jumping";
@@ -271,6 +409,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 		}
 	}
 	
+	// if(this.health <= 0) state = "dead";
 	// this.tilePosition.x -= (distanceTravelled * Mid.DELTA_X);
 };
 
@@ -795,7 +934,7 @@ MapBuilder.WALL_HEIGHTS = [
 MapBuilder.prototype.createMap = function() {
   this.createWallSpan(3, 9, true);
   this.createGap(1);
-  this.createWallSpan(1, 30);
+  this.createSteppedWallSpan(1, 20, 10);
   this.createGap(1);
   this.createWallSpan(2, 18);
   this.createGap(1);
@@ -831,7 +970,7 @@ MapBuilder.prototype.createMap = function() {
   this.createGap(2);
   this.createWallSpan(2, 8);
   this.createGap(2);
-   this.createSteppedWallSpan(3, 10, 3);
+  this.createSteppedWallSpan(3, 10, 3);
   this.createGap(2);
   this.createWallSpan(0, 9);
   this.createGap(2);
