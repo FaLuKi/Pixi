@@ -47,6 +47,74 @@ Mid.prototype.setViewportX = function(newViewportX) {
 };
 
 // ##################
+//main menu
+
+function MainMenu(){
+	state = "mainmenu";
+	this.startButton = new this.createButton("resources/play_button.png", "resources/play_button_press.png", 0, 0);
+	this.startButton.click = this.startButton.tap = function(data){
+		main.stage.removeChild(main.mainMenu.startButton);
+		main.stage.removeChild(main.mainMenu.background);
+		for (var sprite in this.additionButtons) {
+			main.stage.removeChild(sprite);
+		}
+		
+		main.loadSpriteSheet();
+	}
+	
+	this.background = null;
+	
+	this.additionButtons = [];
+}
+
+MainMenu.prototype.createButton = function(texture, pressTexture, x, y){
+	var button = new PIXI.Sprite(PIXI.Texture.fromImage(texture));
+	
+	button.position.x = x;
+	button.position.y = y;
+	
+	button.interactive = true;
+	
+	button.mousedown = button.touchstart = function(data){
+			
+			this.isdown = true;
+			this.setTexture(PIXI.Texture.fromImage(pressTexture));
+			this.alpha = 1;
+		}
+	
+	button.mouseup = button.touchend = function(data){
+			this.setTexture(PIXI.Texture.fromImage(texture));
+		}
+	
+	// set the mouseover callback..
+	button.mouseover = function(data){
+			
+			this.isOver = true;
+			
+			if(this.isdown)return
+			
+			// this.setTexture(textureButtonOver)
+		}
+	
+	// set the mouseout callback..
+	button.mouseout = function(data){
+			
+			this.isOver = false;
+			// if(this.isdown)return
+			this.setTexture(PIXI.Texture.fromImage(texture))
+		}
+	
+	button.click = null;
+		
+	button.tap = null;
+	
+	// add it to the stage
+	main.stage.addChild(button);
+	
+	return button;
+}
+
+// ##################
 
 function Scroller(stage) {
 	this.far =  new Far("resources/bg-far.png", 512, 256);
@@ -65,6 +133,13 @@ function Scroller(stage) {
 	this.enemyPool = [];
 	this.enemyPool.push(new Enemy(1450,1));
 	this.enemyPool.push(new Enemy(300,-2.5));
+	
+	//creat red flash for the indicator that the char took damage.
+	this.damageFlash = new PIXI.Sprite(PIXI.Texture.fromImage("resources/damage.jpg"));
+	this.damageFlash.alpha = 0;
+	this.damageFlash.blendmode = PIXI.blendModes.MULTIPLY;
+	this.damageFlash.duration = 1;
+	stage.addChild(this.damageFlash);
 	
 	// create a text object with a nice stroke
 	this.scoreCount = -1;
@@ -99,6 +174,14 @@ Scroller.prototype.setViewportX = function(viewportX) {
 	this.char.setViewportX(viewportX);
 	for (var value of this.enemyPool){
 		value.setViewportX(viewportX);
+	}
+	if(this.damageFlash.alpha > 0){
+		//remove and readd the sprite to the render to it is on top of every other sprite.
+		main.stage.removeChild(this.damageFlash);
+		this.damageFlash.alpha -= (this.damageFlash.duration / 60);
+		main.stage.addChild(this.damageFlash);
+	}else{
+		this.damageFlash.alpha = 0;
 	}
 	if(state != "dead")	this.score.setText(++this.scoreCount);
 	this.health.setText(this.char.health);
@@ -256,6 +339,7 @@ function Character(texture){
 	this.down = keyboard(40);
 	
 	this.jumpsound = new Audio("resources/sound/jump.m4a");
+	this.damagesound = new Audio("resources/sound/pain.wav");
 	this.walksound = new Audio("resources/sound/concrete1.wav");
 	this.walksound.loop = true;
 	this.walksound.volume = 0.5;
@@ -279,8 +363,12 @@ Character.prototype.takeDamage = function(){
 		return;
 	}
 	this.isInvul = true;
+	var sound=this.damagesound.cloneNode();
+			sound.volume = 0.5;
+			sound.play();
+	main.scroller.damageFlash.alpha = 1;
 	setTimeout(function(){
-		this.isInvul = false;
+		main.scroller.char.isInvul = false;
 	}, this.invulTime * 1000);
 }
 
@@ -326,18 +414,18 @@ Character.prototype.setViewportX = function(newViewportX) {
 		//char is in the air or about to start jumping up
 		if(newViewportX - this.lastjumpCycleFrame > this.walkCycleThresh){
 				//walkCycleThresh reached, time for a new animation frame
-				main.stage.removeChild(this.sprite);
+				// main.stage.removeChild(this.sprite);
 				this.lastjumpCycleFrame = this.viewportX;
 				
 				if(++this.currentjumpCycleFrame >= this.jumpcycle.length){
 					this.currentjumpCycleFrame = 0;
 				}
 				// console.log(this.jumpcycle[this.currentjumpCycleFrame]);
-				this.sprite = PIXI.Sprite.fromFrame(this.jumpcycle[this.currentjumpCycleFrame]);
-				this.sprite.position.x = this.position.x;
-				this.sprite.position.y = this.position.y;
-				this.sprite.viewportX = this.viewportX;
-				main.stage.addChild(this.sprite);
+				this.sprite.setTexture(PIXI.Texture.fromFrame(this.jumpcycle[this.currentjumpCycleFrame]));
+				// this.sprite.position.x = this.position.x;
+				// this.sprite.position.y = this.position.y;
+				// this.sprite.viewportX = this.viewportX;
+				// main.stage.addChild(this.sprite);
 			}
 		
 		if ( this.position.y <= 0){
@@ -364,12 +452,12 @@ Character.prototype.setViewportX = function(newViewportX) {
 					state = "play";
 					this.lastWalkCycleFrame = this.viewportX;
 					this.currentCycleFrame = 0;
-					main.stage.removeChild(this.sprite);
-					this.sprite = PIXI.Sprite.fromFrame(this.walkcycle[this.currentCycleFrame]);
-					this.sprite.position.x = this.position.x;
-					this.sprite.position.y = this.position.y;
-					this.sprite.viewportX = this.viewportX;
-					main.stage.addChild(this.sprite);
+					// main.stage.removeChild(this.sprite);
+					this.sprite.setTexture( PIXI.Texture.fromFrame(this.walkcycle[this.currentCycleFrame]));
+					// this.sprite.position.x = this.position.x;
+					// this.sprite.position.y = this.position.y;
+					// this.sprite.viewportX = this.viewportX;
+					// main.stage.addChild(this.sprite);
 				}else{
 					
 				}
@@ -378,12 +466,12 @@ Character.prototype.setViewportX = function(newViewportX) {
 				this.setPosY(this.position.y + this.fallspeed);
 				this.walksound.pause();
 				
-				main.stage.removeChild(this.sprite);
-				this.sprite = PIXI.Sprite.fromFrame("fall_01");
-				this.sprite.position.x = this.position.x;
-				this.sprite.position.y = this.position.y;
-				this.sprite.viewportX = this.viewportX;
-				main.stage.addChild(this.sprite);
+				// main.stage.removeChild(this.sprite);
+				this.sprite.setTexture(PIXI.Texture.fromFrame("fall_01"));
+				// this.sprite.position.x = this.position.x;
+				// this.sprite.position.y = this.position.y;
+				// this.sprite.viewportX = this.viewportX;
+				// main.stage.addChild(this.sprite);
 				
 				state = "falling";
 			}
@@ -393,18 +481,18 @@ Character.prototype.setViewportX = function(newViewportX) {
 			//character is walking
 			if(newViewportX - this.lastWalkCycleFrame > this.walkCycleThresh){
 				//walkCycleThresh reached, time for a new animation frame
-				main.stage.removeChild(this.sprite);
+				// main.stage.removeChild(this.sprite);
 				this.lastWalkCycleFrame = this.viewportX;
 				
 				if(++this.currentCycleFrame >= this.walkcycle.length){
 					this.currentCycleFrame = 0;
 				}
-				this.sprite = PIXI.Sprite.fromFrame(this.walkcycle[this.currentCycleFrame]);
+				this.sprite.setTexture(PIXI.Texture.fromFrame(this.walkcycle[this.currentCycleFrame]));
 				// console.log(this.sprite);
-				this.sprite.position.x = this.position.x;
-				this.sprite.position.y = this.position.y;
-				this.sprite.viewportX = this.viewportX;
-				main.stage.addChild(this.sprite);
+				// this.sprite.position.x = this.position.x;
+				// this.sprite.position.y = this.position.y;
+				// this.sprite.viewportX = this.viewportX;
+				// main.stage.addChild(this.sprite);
 			}
 		}
 	}
@@ -454,7 +542,7 @@ function keyboard(keyCode) {
 // ####################
 
 function Main() {
-	this.stage = new PIXI.Stage(0x66FF99);
+	this.stage = new PIXI.Stage(0x000000);
 	this.renderer = new PIXI.autoDetectRenderer(
 		512,
 		384,
@@ -464,8 +552,8 @@ function Main() {
 	// this.scroller = new Scroller(this.stage);
 	state = "play";
 	this.scrollSpeed = Main.MIN_SCROLL_SPEED;
-	this.loadSpriteSheet();
-	// requestAnimFrame(this.update.bind(this));
+	requestAnimFrame(this.update.bind(this));
+	// this.loadSpriteSheet();
 	}
 
 Main.constructor = Main;
@@ -480,6 +568,10 @@ Main.prototype.update = function() {
 		case "jumping":
 		case "falling":
 		case "play":
+			this.scrollSpeed += Main.SCROLL_ACCELERATION;
+			if (this.scrollSpeed > Main.MAX_SCROLL_SPEED){
+				this.scrollSpeed = Main.MAX_SCROLL_SPEED;
+			}
 			this.scroller.moveViewportXBy(this.scrollSpeed);
 			break;
 		case "break":
@@ -490,11 +582,6 @@ Main.prototype.update = function() {
 		default:
 			break;
 	}
-	this.scrollSpeed += Main.SCROLL_ACCELERATION;
-	  if (this.scrollSpeed > Main.MAX_SCROLL_SPEED)
-	  {
-		this.scrollSpeed = Main.MAX_SCROLL_SPEED;
-	  }
 	this.renderer.render(this.stage);
 	requestAnimFrame(this.update.bind(this));
 };
@@ -508,7 +595,7 @@ Main.prototype.loadSpriteSheet = function() {
 
 Main.prototype.spriteSheetLoaded = function() {
 	this.scroller = new Scroller(this.stage);
-	requestAnimFrame(this.update.bind(this));
+	// requestAnimFrame(this.update.bind(this));
 };
 
 Main.prototype.borrowWallSprites = function(num) {

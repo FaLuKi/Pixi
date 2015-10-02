@@ -1,5 +1,6 @@
 function init() {
 	main = new Main();
+	main.mainMenu = new MainMenu();
 }
 
 function update(){
