@@ -565,16 +565,16 @@ function Main() {
 
 	// this.scroller = new Scroller(this.stage);
 	state = "play";
-	this.scrollSpeed = Main.MIN_SCROLL_SPEED;
+	this.scrollSpeed = gameSetup.game.minScrollSpeed;
 	requestAnimFrame(this.update.bind(this));
 	// this.loadSpriteSheet();
 	}
 
 Main.constructor = Main;
 // Main.SCROLL_SPEED = 5;
-Main.MIN_SCROLL_SPEED = 2;
-Main.MAX_SCROLL_SPEED = 10;
-Main.SCROLL_ACCELERATION = 0.0015;
+// Main.MIN_SCROLL_SPEED = 2;
+// Main.MAX_SCROLL_SPEED = 10;
+// Main.SCROLL_ACCELERATION = 0.0015;
 
 Main.prototype.update = function() {
 	// this.scroller.moveViewportXBy(this.SCROLL_SPEED);
@@ -582,9 +582,9 @@ Main.prototype.update = function() {
 		case "jumping":
 		case "falling":
 		case "play":
-			this.scrollSpeed += Main.SCROLL_ACCELERATION;
-			if (this.scrollSpeed > Main.MAX_SCROLL_SPEED){
-				this.scrollSpeed = Main.MAX_SCROLL_SPEED;
+			this.scrollSpeed += gameSetup.game.scrollSpeedAcceleration;
+			if (this.scrollSpeed > gameSetup.game.maxScrollSpeed){
+				this.scrollSpeed = gameSetup.game.maxScrollSpeed;
 			}
 			this.scroller.moveViewportXBy(this.scrollSpeed);
 			break;
@@ -610,39 +610,6 @@ Main.prototype.loadSpriteSheet = function() {
 Main.prototype.spriteSheetLoaded = function() {
 	this.scroller = new Scroller(this.stage);
 	// requestAnimFrame(this.update.bind(this));
-};
-
-Main.prototype.borrowWallSprites = function(num) {
-	for (var i = 0; i < num; i++)
-	{
-		// var sprite = this.pool.borrowWindow();
-		if (i % 2 == 0) {
-			var sprite = this.pool.borrowWindow();
-		} else {
-			var sprite = this.pool.borrowDecoration();
-		}
-		sprite.position.x = -32 + (i * 64);
-		sprite.position.y = 0;
-
-		this.wallSlices.push(sprite);
-
-		this.stage.addChild(sprite);
-	}
-};
-
-Main.prototype.returnWallSprites = function() {
-	for (var i = 0; i < this.wallSlices.length; i++)
-	{
-		var sprite = this.wallSlices[i];
-		this.stage.removeChild(sprite);
-		if (i % 2 == 0) {
-			var sprite = this.pool.borrowWindow();
-		} else {
-			var sprite = this.pool.borrowDecoration();
-		}
-	}
-
-	this.wallSlices = [];
 };
 
 // ################
