@@ -1,0 +1,128 @@
+{
+	"game":{
+		"height": 600,
+		"width": 800,
+		"minScrollSpeed": 2,
+		"maxScrollSpeed": 10,
+		"scrollSpeedAcceleration": 0.0015
+	},
+	
+	"mainMenu":{
+		"gameTitle": "Scrolling around",
+		"backgroundTexture": "menuBackground.png",
+		
+		"startButton":{
+			"texture": "play_button.png",
+			"texturePressed": "play_button_press.png",
+			"x": 0,
+			"y": 0
+		},
+		
+		"additionalButtons":[
+			{
+				"texture": "btn1.png",
+				"texturePressed": "btn1Press.png",
+				"x": 0,
+				"y": 50,
+				"url": "google.de"
+			},
+			{
+				"texture": "btn2.png",
+				"texturePressed": "btn2Press.png",
+				"x": 0,
+				"y": 100,
+				"url": "youtube.com"
+			}
+		]
+	},
+	
+	"sideScroller":{
+		"controls":{
+			"jump": 38
+		},
+		
+		"score":{
+			"preText": "Score: ",
+			"x": 0,
+			"y": 0,
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
+		
+		"Health":{
+			"preText": "Health: ",
+			"x": 0,
+			"y": 40,
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
+		
+		"farBackground":{
+			"texture": "resources/bg-far.png",
+			"height": 256,
+			"width": 512,
+			"y": 0
+		},
+		
+		"nearBackground":{
+			"texture": "resources/bg-mid.png",
+			"height": 256,
+			"width": 512,
+			"y": 128
+		},
+		
+		"mapGenerator":{
+			"tileWidth": 64,
+			"minPlatformLength": 1,
+			"maxPlatformLength": 20,
+			"allowSteppedPlatforms": true,
+			"platformHeights": [
+				256,
+				224,
+				192,
+				160,
+				128
+				],
+			"spritesheet": "walls.json",
+			"slicetypes":{
+				"edge":[
+					"edge_01",
+					"edge_02"
+				],
+				"decoration":[
+					"decoration_01",
+					"decoration_02",
+					"decoration_03",
+					"window_01",
+					"window_02"
+				],
+				"step":[
+					"step_01"
+				]
+			}
+		},
+		
+		"player": "player.json",
+		
+		"damageFlash":{
+			"texture": "damage.jpg",
+			"duration": 1,
+			"initialFlashAlpha": 0.5
+		},
+		
+		"enemies":[
+			"enemy1.json",
+			"enemy2.json"
+		]
+	}
+}
