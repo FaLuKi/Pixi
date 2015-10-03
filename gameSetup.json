@@ -68,14 +68,14 @@
 		},
 		
 		"farBackground":{
-			"texture": "resources/bg-far.png",
+			"texture": "bg-far.png",
 			"height": 256,
 			"width": 512,
 			"y": 0
 		},
 		
 		"nearBackground":{
-			"texture": "resources/bg-mid.png",
+			"texture": "bg-mid.png",
 			"height": 256,
 			"width": 512,
 			"y": 128
@@ -124,5 +124,31 @@
 			"enemy1.json",
 			"enemy2.json"
 		]
+	},
+	
+	"gameover":{
+		"gameovertext":{
+			"text": "You are dead",
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
+		
+		"retybutton":{
+			"texture": "retry.png",
+			"texturePressed": "retryPressed.png",
+			"x": 0,
+			"y": 0
+		},
+		
+		"score":{
+			"preText": "Score: ",
+			"x": 0,
+			"y": 150
+		}
 	}
 }

@@ -287,7 +287,7 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 		}
 		
 		if(this.isColliding()){
-			main.scroller.char.takeDamage();
+			main.scroller.char.takeDamage(1);
 		}
 	}
 }
@@ -337,7 +337,7 @@ function Character(texture){
 	this.jumplength = 30;
 	this.lastJump = -1;
 	
-	this.walkcycle = ["walk_01", "walk_02", "walk_03", "walk_04", "walk_05", "walk_06", "walk_07", "walk_08", "walk_09", "walk_10",];
+	this.walkcycle = ["walk_01", "walk_02", "walk_03", "walk_04", "walk_05", "walk_06", "walk_07", "walk_08", "walk_09", "walk_10"];
 	this.lastWalkCycleFrame = -1;
 	this.currentCycleFrame = -1;
 	this.walkCycleThresh = 10;
@@ -368,9 +368,10 @@ function Character(texture){
 // Character.prototype = Object.create(PIXI.Sprite.prototype);
 
 
-Character.prototype.takeDamage = function(){
+Character.prototype.takeDamage = function(amount){
 	if(this.isInvul || state =="dead") return;
-	if(--this.health <= 0){
+	this.health -= amount;
+	if(this.health <= 0){
 		this.health = 0;
 		state = "dead";
 		return;
