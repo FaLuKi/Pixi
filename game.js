@@ -1,6 +1,10 @@
 function init() {
-	main = new Main();
-	main.mainMenu = new MainMenu();
+	$.getJSON('gameSetup.json', function(data) {
+		//data is the JSON string
+		gameSetup = data;
+		main = new Main();
+		main.mainMenu = new MainMenu();
+	});
 }
 
 function update(){
@@ -16,47 +20,51 @@ var TileHeight;
 
 var state;
 
+var gameSetup;
+
 //##############
 
-function Far(texture, width, height){
-	var farTexture = PIXI.Texture.fromImage(texture);
-	PIXI.TilingSprite.call(this, farTexture, width, height);
+function Far(){
+	var farTexture = PIXI.Texture.fromImage("resources/" + gameSetup.sideScroller.farBackground.texture);
+	PIXI.TilingSprite.call(this, farTexture, gameSetup.game.width, gameSetup.sideScroller.farBackground.height);
 	this.position.x = 0;
-	this.position.y = 0;
+	this.position.y = gameSetup.sideScroller.farBackground.y;
 	this.tilePosition.x = 0;
 	this.tilePosition.y = 0;
 	this.viewportX = 0;
+	this.DELTA_X = gameSetup.sideScroller.farBackground.deltaX;
 }
 
 Far.constructor = Far;
 Far.prototype = Object.create(PIXI.TilingSprite.prototype);
-Far.DELTA_X = 0.064;
+// Far.DELTA_X = 0.064;
 
 Far.prototype.setViewportX = function(newViewportX) {
 	var distanceTravelled = newViewportX - this.viewportX;
 	this.viewportX = newViewportX;
-	this.tilePosition.x -= (distanceTravelled * Far.DELTA_X);
+	this.tilePosition.x -= (distanceTravelled * this.DELTA_X);
 };
 
 // ##################
 
-function Mid(texture, width, height){
-	var midTexture = PIXI.Texture.fromImage(texture);
-	PIXI.TilingSprite.call(this, midTexture, width, height);
+function Mid(){
+	var midTexture = PIXI.Texture.fromImage("resources/" + gameSetup.sideScroller.nearBackground.texture);
+	PIXI.TilingSprite.call(this, midTexture, gameSetup.game.width, gameSetup.sideScroller.nearBackground.height);
 	this.position.x = 0;
-	this.position.y = 128;
+	this.position.y = gameSetup.sideScroller.nearBackground.y;
 	this.tilePosition.x = 0;
 	this.tilePosition.y = 0;
 	this.viewportX = 0;
+	this.DELTA_X = gameSetup.sideScroller.nearBackground.deltaX;
 }
 Mid.constructor = Mid;
 Mid.prototype = Object.create(PIXI.TilingSprite.prototype);
-Mid.DELTA_X = 0.32;
+// Mid.DELTA_X = 0.32;
 
 Mid.prototype.setViewportX = function(newViewportX) {
 	var distanceTravelled = newViewportX - this.viewportX;
 	this.viewportX = newViewportX;
-	this.tilePosition.x -= (distanceTravelled * Mid.DELTA_X);
+	this.tilePosition.x -= (distanceTravelled * this.DELTA_X);
 };
 
 // ##################
@@ -68,7 +76,7 @@ function MainMenu(){
 	this.startButton.click = this.startButton.tap = function(data){
 		main.stage.removeChild(main.mainMenu.startButton);
 		main.stage.removeChild(main.mainMenu.background);
-		for (var sprite in this.additionButtons) {
+		for (var sprite in this.additionalButtons) {
 			main.stage.removeChild(sprite);
 		}
 		
@@ -77,7 +85,7 @@ function MainMenu(){
 	
 	this.background = null;
 	
-	this.additionButtons = [];
+	this.additionalButtons = [];
 }
 
 MainMenu.prototype.createButton = function(texture, pressTexture, x, y){
@@ -148,25 +156,26 @@ function Scroller(stage) {
 	this.enemyPool.push(new Enemy(300,-2.5));
 	
 	//creat red flash for the indicator that the char took damage.
-	this.damageFlash = new PIXI.Sprite(PIXI.Texture.fromImage("resources/damage.jpg"));
+	this.damageFlash = new PIXI.Sprite(PIXI.Texture.fromImage("resources/" + gameSetup.sideScroller.damageFlash.texture));
 	this.damageFlash.alpha = 0;
 	this.damageFlash.blendmode = PIXI.blendModes.MULTIPLY;
-	this.damageFlash.duration = 1;
+	this.damageFlash.duration = gameSetup.sideScroller.damageFlash.duration;
 	stage.addChild(this.damageFlash);
 	
 	// create a text object with a nice stroke
 	this.scoreCount = -1;
-	this.score = new PIXI.Text("0", {font: "bold 32px Podkova", fill: "#ffffff", align: "center", stroke: "#000000", strokeThickness: 6});
+	this.score = new PIXI.Text("0", {font: gameSetup.sideScroller.score.style.font, fill: gameSetup.sideScroller.score.style.fill, align: gameSetup.sideScroller.score.style.align, stroke: gameSetup.sideScroller.score.style.stroke, strokeThickness: gameSetup.sideScroller.score.style.strokeThickness});
 	// setting the anchor point to 0.5 will center align the text... great for spinning!
 	// this.score.anchor.x = this.score.anchor.y = 0.5;
-	this.score.anchor.x = 1;
-	this.score.position.x = 512;
-	this.score.position.y = 5;
+	this.score.anchor.x = gameSetup.sideScroller.score.anchorX;
+	this.score.anchor.y = gameSetup.sideScroller.score.anchorY;
+	this.score.position.x = gameSetup.sideScroller.score.x;
+	this.score.position.y = gameSetup.sideScroller.score.y;
 	
 	stage.addChild(this.score);
 	// stage.addChild(this.char);
 	
-	this.health = new PIXI.Text("0", {font: "bold 32px Podkova", fill: "#ffffff", align: "center", stroke: "#000000", strokeThickness: 6});
+	this.health = new PIXI.Text("0", {font: gameSetup.sideScroller.health.style.font, fill: gameSetup.sideScroller.health.style.fill, align: gameSetup.sideScroller.health.style.align, stroke: gameSetup.sideScroller.health.style.stroke, strokeThickness: gameSetup.sideScroller.health.style.strokeThickness});
 	this.health.position.x = 5;
 	this.health.position.y = 5;
 	
@@ -191,13 +200,13 @@ Scroller.prototype.setViewportX = function(viewportX) {
 	if(this.damageFlash.alpha > 0){
 		//remove and readd the sprite to the render to it is on top of every other sprite.
 		main.stage.removeChild(this.damageFlash);
-		this.damageFlash.alpha -= (this.damageFlash.duration / 60);
+		this.damageFlash.alpha -= (this.damageFlash.duration / (60 * gameSetup.sideScroller.damageFlash.initialFlashAlpha));
 		main.stage.addChild(this.damageFlash);
 	}else{
 		this.damageFlash.alpha = 0;
 	}
-	if(state != "dead")	this.score.setText(++this.scoreCount);
-	this.health.setText(this.char.health);
+	if(state != "dead")	this.score.setText(gameSetup.sideScroller.score.preText + ++this.scoreCount);
+	this.health.setText(gameSetup.sideScroller.health.preText + this.char.health);
 };
 
 Scroller.prototype.moveViewportXBy = function(units) {
@@ -242,9 +251,9 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 				this.sprite.anchor.x = 1;
 			}
 			main.stage.addChild(this.sprite);
-			this.setPosX(512);
+			this.setPosX(gameSetup.game.width);
 			
-			var sliceW = Math.floor(512 / 64);
+			var sliceW = Math.floor(gameSetup.game.width / gameSetup.sideScroller.mapGenerator.tileWidth);
 			var slices = main.scroller.front.slices;
 			var sliceHeight = slices[main.scroller.front.viewportSliceX + sliceW].y || -1;
 			// console.log(sliceHeight);
@@ -266,7 +275,7 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 			}
 		}
 		// console.log("Enemy: " + Math.floor(main.scroller.front.viewportSliceX + ( this.position.x / 64)) + "	" + currentSliceHeight);
-		if(this.position.x < - 60 || this.position.y > 368){
+		if(this.position.x < - this.sprite.width || this.position.y > gameSetup.game.height ){
 			this.destroy();
 		}
 		
@@ -380,7 +389,7 @@ Character.prototype.takeDamage = function(amount){
 	var sound=this.damagesound.cloneNode();
 			sound.volume = 0.5;
 			sound.play();
-	main.scroller.damageFlash.alpha = 1;
+	main.scroller.damageFlash.alpha = gameSetup.sideScroller.damageFlash.initialFlashAlpha;
 	setTimeout(function(){
 		main.scroller.char.isInvul = false;
 	}, this.invulTime * 1000);
@@ -450,7 +459,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 	}
 	
 	if(state == "falling" || state == "play"){
-		if (this.position.y > 384){
+		if (this.position.y > gameSetup.game.height){
 			state = "dead";
 			return;
 		}
@@ -466,12 +475,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 					state = "play";
 					this.lastWalkCycleFrame = this.viewportX;
 					this.currentCycleFrame = 0;
-					// main.stage.removeChild(this.sprite);
 					this.sprite.setTexture( PIXI.Texture.fromFrame(this.walkcycle[this.currentCycleFrame]));
-					// this.sprite.position.x = this.position.x;
-					// this.sprite.position.y = this.position.y;
-					// this.sprite.viewportX = this.viewportX;
-					// main.stage.addChild(this.sprite);
 				}else{
 					
 				}
@@ -479,14 +483,8 @@ Character.prototype.setViewportX = function(newViewportX) {
 				//Fall as regular
 				this.setPosY(this.position.y + this.fallspeed);
 				this.walksound.pause();
-				
-				// main.stage.removeChild(this.sprite);
 				this.sprite.setTexture(PIXI.Texture.fromFrame("fall_01"));
-				// this.sprite.position.x = this.position.x;
-				// this.sprite.position.y = this.position.y;
-				// this.sprite.viewportX = this.viewportX;
-				// main.stage.addChild(this.sprite);
-				
+
 				state = "falling";
 			}
 		}
@@ -558,8 +556,10 @@ function keyboard(keyCode) {
 function Main() {
 	this.stage = new PIXI.Stage(0x000000);
 	this.renderer = new PIXI.autoDetectRenderer(
-		512,
-		384,
+		gameSetup.game.width,
+		gameSetup.game.height,
+		// 512,
+		// 384,
 		{view:document.getElementById("game-canvas")}
 	);
 
@@ -643,61 +643,6 @@ Main.prototype.returnWallSprites = function() {
 	}
 
 	this.wallSlices = [];
-};
-
-Main.prototype.generateTestWallSpan = function() {
-  var lookupTable = [
-    this.pool.borrowFrontEdge,  // 1st slice
-    this.pool.borrowWindow,     // 2nd slice
-    this.pool.borrowDecoration, // 3rd slice
-    this.pool.borrowStep,       // 4th slice
-    this.pool.borrowWindow,     // 5th slice
-    this.pool.borrowBackEdge    // 6th slice
-  ];
-  
-  var yPos = [
-    128, // 1st slice
-    128, // 2nd slice
-    128, // 3rd slice
-    192, // 4th slice
-    192, // 5th slice
-    192  // 6th slice
-  ];
-  
-  for (var i = 0; i < lookupTable.length; i++)
-  {
-    var func = lookupTable[i];
-
-    var sprite = func.call(this.pool);
-    sprite.position.x = 32 + (i * 64);
-    sprite.position.y = yPos[i];
-
-    this.wallSlices.push(sprite);
-
-    this.stage.addChild(sprite);
-  }
-}
-
-Main.prototype.clearTestWallSpan = function() {
-  var lookupTable = [
-    this.pool.returnFrontEdge,  // 1st slice
-    this.pool.returnWindow,     // 2nd slice
-    this.pool.returnDecoration, // 3rd slice
-    this.pool.returnStep,       // 4th slice
-    this.pool.returnWindow,     // 5th slice
-    this.pool.returnBackEdge    // 6th slice
-  ];
-
-  for (var i = 0; i < lookupTable.length; i++)
-  {
-    var func = lookupTable[i];
-    var sprite = this.wallSlices[i];
-
-    this.stage.removeChild(sprite);
-    func.call(this.pool, sprite);
-  }
-
-  this.wallSlices = [];
 };
 
 // ################
@@ -870,19 +815,21 @@ function Walls() {
   
   this.viewportX = 0;
   this.viewportSliceX = 0;
+  this.VIEWPORT_WIDTH = gameSetup.game.width;
+  this.VIEWPORT_NUM_SLICES = Math.ceil(this.VIEWPORT_WIDTH/gameSetup.sideScroller.mapGenerator.tileWidth) + 1;
 }
 
-WallSlice.WIDTH = 64;
+// WallSlice.WIDTH = 64;
 
 Walls.constructor = Walls;
 Walls.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
-Walls.VIEWPORT_WIDTH = 512;
-Walls.VIEWPORT_NUM_SLICES = Math.ceil(Walls.VIEWPORT_WIDTH/WallSlice.WIDTH) + 1;
+
 
 function WallSlice(type, y) {
   this.type   = type;
   this.y      = y;
   this.sprite = null;
+  this.WIDTH = gameSetup.sideScroller.mapGenerator.tileWidth;
 }
 
 Walls.prototype.addSlice = function(sliceType, y) {
@@ -953,7 +900,7 @@ Walls.prototype.returnWallSprite = function(sliceType, sliceSprite) {
 Walls.prototype.setViewportX = function(viewportX) {
 	this.viewportX = this.checkViewportXBounds(viewportX);
 	var prevViewportSliceX = this.viewportSliceX;
-	this.viewportSliceX = Math.floor(this.viewportX/WallSlice.WIDTH);
+	this.viewportSliceX = Math.floor(this.viewportX/gameSetup.sideScroller.mapGenerator.tileWidth);
 	TileHeight = this.slices[this.viewportSliceX + 1].y || -1;
 	this.removeOldSlices(prevViewportSliceX);
 	this.addNewSlices();
@@ -962,9 +909,9 @@ Walls.prototype.setViewportX = function(viewportX) {
 
 Walls.prototype.removeOldSlices = function(prevViewportSliceX) {
 	var numOldSlices = this.viewportSliceX - prevViewportSliceX;
-	if (numOldSlices > Walls.VIEWPORT_NUM_SLICES)
+	if (numOldSlices > this.VIEWPORT_NUM_SLICES)
 	{
-		numOldSlices = Walls.VIEWPORT_NUM_SLICES;
+		numOldSlices = this.VIEWPORT_NUM_SLICES;
 	}
 	for (var i = prevViewportSliceX; i < prevViewportSliceX + numOldSlices; i++)
 	{
@@ -979,9 +926,9 @@ Walls.prototype.removeOldSlices = function(prevViewportSliceX) {
 };
 
 Walls.prototype.addNewSlices = function() {
-	var firstX = -(this.viewportX % WallSlice.WIDTH);
+	var firstX = -(this.viewportX % gameSetup.sideScroller.mapGenerator.tileWidth);
   for (var i = this.viewportSliceX, sliceIndex = 0;
-           i < this.viewportSliceX + Walls.VIEWPORT_NUM_SLICES;
+           i < this.viewportSliceX + this.VIEWPORT_NUM_SLICES;
            i++, sliceIndex++)
   {
 	  var slice = this.slices[i];
@@ -990,7 +937,7 @@ Walls.prototype.addNewSlices = function() {
       // Associate the slice with a sprite and update the sprite's position
 	  slice.sprite = this.borrowWallSprite(slice.type);
 
-      slice.sprite.position.x = firstX + (sliceIndex * WallSlice.WIDTH);
+      slice.sprite.position.x = firstX + (sliceIndex * gameSetup.sideScroller.mapGenerator.tileWidth);
       slice.sprite.position.y = slice.y;
 
       this.addChild(slice.sprite);
@@ -998,13 +945,13 @@ Walls.prototype.addNewSlices = function() {
     else if (slice.sprite != null)
     {
       // The slice is already associated with a sprite. Just update its position
-	  slice.sprite.position.x = firstX + (sliceIndex * WallSlice.WIDTH);
+	  slice.sprite.position.x = firstX + (sliceIndex * gameSetup.sideScroller.mapGenerator.tileWidth);
     }
   }
 };
 
 Walls.prototype.checkViewportXBounds = function(viewportX) {
-  var maxViewportX = (this.slices.length - Walls.VIEWPORT_NUM_SLICES) * WallSlice.WIDTH;
+  var maxViewportX = (this.slices.length - this.VIEWPORT_NUM_SLICES) * gameSetup.sideScroller.mapGenerator.tileWidth;
   if (viewportX < 0)
   {
     viewportX = 0;

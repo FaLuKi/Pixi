@@ -1,6 +1,6 @@
 {
 	"game":{
-		"height": 600,
+		"height": 384,
 		"width": 800,
 		"minScrollSpeed": 2,
 		"maxScrollSpeed": 10,
@@ -44,7 +44,9 @@
 		"score":{
 			"preText": "Score: ",
 			"x": 0,
-			"y": 0,
+			"y": 60,
+			"anchorX": 0,
+			"anchorY": 0,
 			"style":{
 				"font": "bold 32px Podkova", 
 				"fill": "#ffffff", 
@@ -54,7 +56,7 @@
 			}
 		},
 		
-		"Health":{
+		"health":{
 			"preText": "Health: ",
 			"x": 0,
 			"y": 40,
@@ -70,15 +72,15 @@
 		"farBackground":{
 			"texture": "bg-far.png",
 			"height": 256,
-			"width": 512,
-			"y": 0
+			"y": 0,
+			"deltaX": 0.064
 		},
 		
 		"nearBackground":{
 			"texture": "bg-mid.png",
 			"height": 256,
-			"width": 512,
-			"y": 128
+			"y": 128,
+			"deltaX": 0.32
 		},
 		
 		"mapGenerator":{
