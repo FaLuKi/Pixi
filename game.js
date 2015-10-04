@@ -72,7 +72,30 @@ Mid.prototype.setViewportX = function(newViewportX) {
 
 function MainMenu(){
 	state = "mainmenu";
-	this.startButton = new this.createButton("resources/play_button.png", "resources/play_button_press.png", 0, 0);
+	
+	var backgroundTexture = new PIXI.Texture.fromImage("resources/" + gameSetup.mainMenu.backgroundTexture);
+	this.background = new PIXI.TilingSprite(backgroundTexture, gameSetup.game.width, gameSetup.game.height);
+	main.stage.addChild(this.background);
+	
+	this.gameTitle = new PIXI.Text(gameSetup.mainMenu.gameTitle.text, {
+		font: gameSetup.mainMenu.gameTitle.style.font, 
+		fill: gameSetup.mainMenu.gameTitle.style.fill, 
+		align: gameSetup.mainMenu.gameTitle.style.align, 
+		stroke: gameSetup.mainMenu.gameTitle.style.stroke, 
+		strokeThickness: gameSetup.mainMenu.gameTitle.style.strokeThickness
+	});
+	
+	this.gameTitle.anchor.x = gameSetup.mainMenu.gameTitle.anchorX;
+	this.gameTitle.anchor.y = gameSetup.mainMenu.gameTitle.anchorY;
+	this.gameTitle.position.x = gameSetup.mainMenu.gameTitle.x;
+	this.gameTitle.position.y = gameSetup.mainMenu.gameTitle.y;
+	main.stage.addChild(this.gameTitle);
+	
+	var x = gameSetup.mainMenu.startButton.x;
+	var y = gameSetup.mainMenu.startButton.y;
+	var texture = gameSetup.mainMenu.startButton.texture;
+	var texturePressed = gameSetup.mainMenu.startButton.texturePressed;
+	this.startButton = new this.createButton("resources/" + texture, "resources/" + texturePressed, x, y);
 	this.startButton.click = this.startButton.tap = function(data){
 		main.stage.removeChild(main.mainMenu.startButton);
 		main.stage.removeChild(main.mainMenu.background);
@@ -83,9 +106,13 @@ function MainMenu(){
 		main.loadSpriteSheet();
 	}
 	
-	this.background = null;
-	
-	this.additionalButtons = [];
+	this.additionalButtons = gameSetup.mainMenu.additionalButtons;
+	for (var button of this.additionalButtons){
+		var addBut = new this.createButton("resources/" + button.texture, "resources/" + button.texturePressed, button.x, button.y);
+		addBut.click = addBut.tap =function(){
+			var win=window.open(button.url, '_blank');
+		}
+	}
 }
 
 MainMenu.prototype.createButton = function(texture, pressTexture, x, y){
@@ -181,12 +208,25 @@ function Scroller(stage) {
 	
 	stage.addChild(this.health);
 	
-	
 	this.viewportX = 0;
 	
+	this.up = keyboard(38);
+	this.up.press = this.jumpDown;
+	this.up.release = this.jumpUp;
 }
 
 Scroller.constructor = Scroller;
+
+//player presses the jump button
+Scroller.prototype.jumpDown = function(){
+
+}
+
+//player releases jump button
+Scroller.prototype.jumpUp = function(){
+	if(state == "dead") return;
+	state = "falling";
+}
 
 Scroller.prototype.setViewportX = function(viewportX) {
 	this.viewportX = viewportX;
@@ -355,10 +395,11 @@ function Character(texture){
 	this.lastjumpCycleFrame = -1;
 	this.currentjumpCycleFrame = -1;
 	
-	this.left = keyboard(37);
-	this.up = keyboard(38);
-	this.right = keyboard(39);
-	this.down = keyboard(40);
+	// this.left = keyboard(37);
+	// this.up = keyboard(38);
+	// this.up.release = this.jumpUp;
+	// this.right = keyboard(39);
+	// this.down = keyboard(40);
 	
 	this.jumpsound = new Audio("resources/sound/jump.m4a");
 	this.damagesound = new Audio("resources/sound/pain.wav");
@@ -371,7 +412,7 @@ function Character(texture){
 	this.isInvul = false;
 		
 	// up.press = this.char.jumpDown(this.char);
-	this.up.release = this.jumpUp;
+	
 }
 // Character.constructor = Character;
 // Character.prototype = Object.create(PIXI.Sprite.prototype);
@@ -406,12 +447,6 @@ Character.prototype.bindSprite = function(){
 	this.sprite.viewportX = this.viewportX;
 	main.stage.addChild(this.sprite);
 	state = "play";
-}
-	
-Character.prototype.jumpUp = function(){
-	if(state == "dead") return;
-	state = "falling";
-	// console.log(state);
 }
 
 Character.prototype.setViewportX = function(newViewportX) {

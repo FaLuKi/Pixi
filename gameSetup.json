@@ -8,30 +8,43 @@
 	},
 	
 	"mainMenu":{
-		"gameTitle": "Scrolling around",
+		"gameTitle": {
+			"text": "Scrolling around",
+			"x": 400,
+			"y": 30,
+			"anchorX": 0.5,
+			"anchorY": 0,
+			"style":{
+				"font": "bold 75px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
 		"backgroundTexture": "menuBackground.png",
 		
 		"startButton":{
 			"texture": "play_button.png",
 			"texturePressed": "play_button_press.png",
-			"x": 0,
-			"y": 0
+			"x": 213,
+			"y": 150
 		},
 		
 		"additionalButtons":[
 			{
 				"texture": "btn1.png",
 				"texturePressed": "btn1Press.png",
-				"x": 0,
-				"y": 50,
-				"url": "google.de"
+				"x": 335,
+				"y": 250,
+				"url": "https://google.de"
 			},
 			{
 				"texture": "btn2.png",
 				"texturePressed": "btn2Press.png",
-				"x": 0,
-				"y": 100,
-				"url": "youtube.com"
+				"x": 405,
+				"y": 250,
+				"url": "https://youtube.com"
 			}
 		]
 	},
@@ -43,9 +56,9 @@
 		
 		"score":{
 			"preText": "Score: ",
-			"x": 0,
-			"y": 60,
-			"anchorX": 0,
+			"x": 795,
+			"y": 5,
+			"anchorX": 1,
 			"anchorY": 0,
 			"style":{
 				"font": "bold 32px Podkova", 
