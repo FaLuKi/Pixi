@@ -2,6 +2,7 @@
 	<head>
 		<title>Yoink</title>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 		<style>
 			body {
 				background-color: #000000;
@@ -11,16 +12,18 @@
 			}
 			#game-canvas{
 				background-color: #222222;
-				width: 512px;
+				//width: 512px;
+				width: 800px;
 				height: 384px;
 				position: relative;
-				left: calc(50% - 256px);
+				left: calc(50% - 400px);
 				top: calc(50% - 192px);
 			}
 		</style>
 	</head>
 	<body onload="init()">
 		<canvas id="game-canvas"></canvas>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="pixi/bin/pixi.dev.js"></script>
 		<!-- <script src="Far.js"></script> -->
 		<script src="game.js"></script>
