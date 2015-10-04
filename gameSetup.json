@@ -99,8 +99,9 @@
 		"mapGenerator":{
 			"tileWidth": 64,
 			"minPlatformLength": 1,
-			"maxPlatformLength": 20,
+			"maxPlatformLength": 8,
 			"allowSteppedPlatforms": true,
+			"steppedPlatformsChance": 0.20,
 			"platformHeights": [
 				256,
 				224,
@@ -108,7 +109,9 @@
 				160,
 				128
 				],
-			"spritesheet": "walls.json",
+			"allowedJumpHeight": 2,
+			"gapThreshhold": 5,
+			"spritesheet": "wall.json",
 			"slicetypes":{
 				"edge":[
 					"edge_01",

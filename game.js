@@ -99,19 +99,21 @@ function MainMenu(){
 	this.startButton.click = this.startButton.tap = function(data){
 		main.stage.removeChild(main.mainMenu.startButton);
 		main.stage.removeChild(main.mainMenu.background);
-		for (var sprite in this.additionalButtons) {
+		main.stage.removeChild(main.mainMenu.gameTitle);
+		for (var sprite of main.mainMenu.additionalButtons) {
 			main.stage.removeChild(sprite);
 		}
 		
 		main.loadSpriteSheet();
 	}
 	
-	this.additionalButtons = gameSetup.mainMenu.additionalButtons;
-	for (var button of this.additionalButtons){
+	this.additionalButtons = [];
+	for (var button of gameSetup.mainMenu.additionalButtons){
 		var addBut = new this.createButton("resources/" + button.texture, "resources/" + button.texturePressed, button.x, button.y);
-		addBut.click = addBut.tap =function(){
-			var win=window.open(button.url, '_blank');
+		addBut.click = addBut.tap = function(){
+			var win = window.open(button.url, '_blank');
 		}
+		this.additionalButtons.push(addBut);
 	}
 }
 
@@ -176,7 +178,7 @@ function Scroller(stage) {
 	
 	this.mapBuilder = new MapBuilder(this.front);
 	
-	this.char = new Character("resources/char.png");
+	this.char = new Character();
 	
 	this.enemyPool = [];
 	this.enemyPool.push(new Enemy(1450,1));
@@ -219,17 +221,19 @@ Scroller.constructor = Scroller;
 
 //player presses the jump button
 Scroller.prototype.jumpDown = function(){
-
+	main.scroller.char.jumpPressed = true;
 }
 
 //player releases jump button
 Scroller.prototype.jumpUp = function(){
+	main.scroller.char.jumpPressed = false;
 	if(state == "dead") return;
 	state = "falling";
 }
 
 Scroller.prototype.setViewportX = function(viewportX) {
 	this.viewportX = viewportX;
+	this.mapBuilder.setViewportX(viewportX);
 	this.far.setViewportX(viewportX);
 	this.mid.setViewportX(viewportX);
 	this.front.setViewportX(viewportX);
@@ -410,7 +414,8 @@ function Character(texture){
 	this.health = 2;
 	this.invulTime = 5;
 	this.isInvul = false;
-		
+	
+	this.jumpPressed = false;
 	// up.press = this.char.jumpDown(this.char);
 	
 }
@@ -451,8 +456,8 @@ Character.prototype.bindSprite = function(){
 
 Character.prototype.setViewportX = function(newViewportX) {
 	this.viewportX = newViewportX;
-	// console.log(this.position.y + "	" + this.sprite.position.y);
-	if( (state == "play" || state == "jumping" || this.jumplength == -1)&& this.up.isDown){
+
+	if( (state == "play" || state == "jumping" || this.jumplength == -1)&& this.jumpPressed){
 		this.walksound.pause();
 		if(state == "play" ){
 			state = "jumping";
@@ -660,8 +665,8 @@ function WallSpritesPool() {
 WallSpritesPool.prototype.createWindows = function() {
 	this.windows = [];
 
-	this.addWindowSprites(6, "window_01");
-	this.addWindowSprites(6, "window_02");
+	// this.addWindowSprites(6, "window_01");
+	// this.addWindowSprites(6, "window_02");
 
 	this.shuffle(this.windows);
 };
@@ -669,29 +674,39 @@ WallSpritesPool.prototype.createWindows = function() {
 WallSpritesPool.prototype.createDecorations = function() {
 	this.decorations = [];
 
-	this.addDecorationSprites(6, "decoration_01");
-	this.addDecorationSprites(6, "decoration_02");
-	this.addDecorationSprites(6, "decoration_03");
+	for (var decoration of gameSetup.sideScroller.mapGenerator.slicetypes.decoration){
+		this.addDecorationSprites(6, decoration);
+	}
+	
+	// this.addDecorationSprites(6, "decoration_01");
+	// this.addDecorationSprites(6, "decoration_02");
+	// this.addDecorationSprites(6, "decoration_03");
 
 	this.shuffle(this.decorations);
 };
 
 WallSpritesPool.prototype.createFrontEdges = function() {
-	  this.frontEdges = [];
+	this.frontEdges = [];
+	for (var edge of gameSetup.sideScroller.mapGenerator.slicetypes.edge){
+		this.addFrontEdgeSprites(4, edge);
+	}
+	// this.addFrontEdgeSprites(2, "edge_01");
+	// this.addFrontEdgeSprites(2, "edge_02");
 
-	  this.addFrontEdgeSprites(2, "edge_01");
-	  this.addFrontEdgeSprites(2, "edge_02");
-
-	  this.shuffle(this.frontEdges);
+	this.shuffle(this.frontEdges);
 };
 
 WallSpritesPool.prototype.createBackEdges = function() {
-	  this.backEdges = [];
+	this.backEdges = [];
 
-	  this.addBackEdgeSprites(2, "edge_01");
-	  this.addBackEdgeSprites(2, "edge_02");
+	for (var edge of gameSetup.sideScroller.mapGenerator.slicetypes.edge){
+		this.addBackEdgeSprites(2, edge);
+	}
 
-	  this.shuffle(this.backEdges);
+	// this.addBackEdgeSprites(2, "edge_01");
+	// this.addBackEdgeSprites(2, "edge_02");
+
+	this.shuffle(this.backEdges);
 };
 
 WallSpritesPool.prototype.borrowWindow = function() {
@@ -970,80 +985,79 @@ Walls.prototype.checkViewportXBounds = function(viewportX) {
 
 function MapBuilder(walls) {
    this.walls = walls;
+   MapBuilder.WALL_HEIGHTS = gameSetup.sideScroller.mapGenerator.platformHeights;
    this.createMap();
+   
+   this.minPlatformLength = gameSetup.sideScroller.mapGenerator.minPlatformLength;
+   this.maxPlatformLength = gameSetup.sideScroller.mapGenerator.maxPlatformLength;
+   this.allowSteppedPlatforms = gameSetup.sideScroller.mapGenerator.allowSteppedPlatforms;
 }
 
 MapBuilder.WALL_HEIGHTS = [
-  256, // Lowest slice
-  224,
-  192,
-  160,
-  128  // Highest slice
+  // 256, // Lowest slice
+  // 224,
+  // 192,
+  // 160,
+  // 128  // Highest slice
 ];
+
+//function for adding new tiles before the player can see the last tile on screen
+MapBuilder.prototype.setViewportX = function(viewportX){
+	//generate new platforms if player is two viewport widths away from the last platform.
+	if(this.walls.slices.length < this.walls.viewportSliceX + ((gameSetup.game.width / gameSetup.sideScroller.mapGenerator.tileWidth) * 2)){
+		var stepped = gameSetup.sideScroller.mapGenerator.steppedPlatformsChance > Math.random();
+		var offset = 1;
+		
+		//go to the last tile that is not a gap
+		while(this.walls.slices[this.walls.slices.length - offset].y == null){
+			// console.log(this.walls.slices[this.walls.slices.length - offset].y);
+			offset++;
+		}
+		var tileY = this.walls.slices[this.walls.slices.length - offset].y
+		var lastHeightIndex;
+		for(var key in MapBuilder.WALL_HEIGHTS) {
+			if(MapBuilder.WALL_HEIGHTS[key] === tileY) {
+				lastHeightIndex = key;
+			}
+		}
+		// console.log(lastHeightIndex);
+		
+		if(stepped){
+			var rngHeight = Math.floor((Math.random() * MapBuilder.WALL_HEIGHTS.length - 2) + 2);
+			//if the height difference it too much, return and generate it next update with probable better values
+			//this will be returned due to the stepped platform needing 2 heightvalue indexes difference
+			if(lastHeightIndex < rngHeight && lastHeightIndex + gameSetup.sideScroller.mapGenerator.allowedJumpHeight < rngHeight) {
+					// console.log("stepped: too hight");
+					return;
+			}
+			var rngLength1 = Math.floor( (Math.random() * (this.maxPlatformLength/2)) + this.minPlatformLength + 1); //+1 in the end because of the edge sprite 
+			var rngLength2 = Math.floor( (Math.random() * (this.maxPlatformLength/2)) + this.minPlatformLength + 1);
+			this.createSteppedWallSpan(rngHeight, rngLength1, rngLength2);
+		}else{
+			var rngHeight = Math.floor(Math.random() * MapBuilder.WALL_HEIGHTS.length);
+			//if the height difference it too much take highest allowed tile jump
+			if(lastHeightIndex < rngHeight && lastHeightIndex + gameSetup.sideScroller.mapGenerator.allowedJumpHeight < rngHeight){
+				// console.log("too hight");
+				rngHeight = gameSetup.sideScroller.mapGenerator.allowedJumpHeight;
+			}
+			var rngLength = Math.floor( (Math.random() * this.maxPlatformLength) + this.minPlatformLength + 2); // +2 for the front and end edge. Preventing cutoff
+			this.createWallSpan(rngHeight, rngLength);
+		}
+		
+		var gapThresh =  Math.floor(main.scrollSpeed / gameSetup.sideScroller.mapGenerator.allowedJumpHeight);
+		
+		for(var i = 0; i< gapThresh; i++){
+			this.createGap(1);
+			// console.log("gap: " + i);
+		}
+	}
+}
 
 MapBuilder.prototype.createMap = function() {
   this.createWallSpan(3, 9, true);
   this.createGap(1);
-  this.createSteppedWallSpan(1, 20, 10);
-  this.createGap(1);
-  this.createWallSpan(2, 18);
-  this.createGap(1);
-  this.createSteppedWallSpan(2, 5, 10);
-  this.createGap(1);
-  this.createWallSpan(1, 10);
-  this.createGap(1);
-  this.createWallSpan(2, 6); 
-  this.createGap(1);
-  this.createWallSpan(1, 8);
-  this.createGap(1);
-  this.createWallSpan(2, 6);
-  this.createGap(1);
-  this.createWallSpan(1, 8);
-  this.createGap(1)
-  this.createWallSpan(2, 7);
-  this.createGap(1);
-  this.createWallSpan(1, 16);
-  this.createGap(1);
-  this.createWallSpan(2, 6);
-  this.createGap(1);
-  this.createWallSpan(1, 22);
-  this.createGap(2);
-  this.createWallSpan(2, 14);
-  this.createGap(2);
-  this.createWallSpan(3, 8);
-  this.createGap(2);
-  this.createSteppedWallSpan(3, 5, 12);
-  this.createGap(2);
-  this.createWallSpan(2, 8);
-  this.createGap(2);
-  this.createWallSpan(1, 10);
-  this.createGap(2);
-  this.createWallSpan(2, 8);
-  this.createGap(2);
-  this.createSteppedWallSpan(3, 10, 3);
-  this.createGap(2);
-  this.createWallSpan(0, 9);
-  this.createGap(2);
-  this.createWallSpan(1, 12);
-  this.createGap(2);
-  this.createWallSpan(2, 5);
-  this.createGap(2);
-  this.createWallSpan(3, 10);
-  this.createGap(2);
-  this.createWallSpan(4, 2);
-  this.createGap(3);
-  this.createWallSpan(4, 6);
-  this.createGap(4);
-  this.createWallSpan(0, 15);
-  this.createGap(3);
-  this.createWallSpan(1, 7);
-  this.createGap(3);
-  this.createWallSpan(2, 11);
-  this.createGap(3);
-  this.createSteppedWallSpan(4, 8, 10);
-  this.createGap(3);
-  this.createWallSpan(2, 11);
-  this.createGap(20);
+  // this.createSteppedWallSpan(2, 5, 10);
+
 };
 
 MapBuilder.prototype.createGap = function(spanLength) { 
@@ -1100,14 +1114,14 @@ MapBuilder.prototype.addWallMid = function(heightIndex, spanLength) {
   var y = MapBuilder.WALL_HEIGHTS[heightIndex];
   for (var i = 0; i < spanLength; i++)
   {
-    if (i % 2 == 0)
-    {
-      this.walls.addSlice(SliceType.WINDOW, y);
-    }
-    else
-    {
+    // if (i % 2 == 0)
+    // {
+      // this.walls.addSlice(SliceType.WINDOW, y);
+    // }
+    // else
+    // {
       this.walls.addSlice(SliceType.DECORATION, y);
-    }
+    // }
   }
 };
 
