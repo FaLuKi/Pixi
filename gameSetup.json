@@ -1,7 +1,7 @@
 {
 	"game":{
-		"height": 384,
-		"width": 800,
+		"height": 350,
+		"width": 600,
 		"minScrollSpeed": 2,
 		"maxScrollSpeed": 10,
 		"scrollSpeedAcceleration": 0.0015
@@ -10,7 +10,7 @@
 	"mainMenu":{
 		"gameTitle": {
 			"text": "Scrolling around",
-			"x": 400,
+			"x": 300,
 			"y": 30,
 			"anchorX": 0.5,
 			"anchorY": 0,
@@ -27,7 +27,7 @@
 		"startButton":{
 			"texture": "play_button.png",
 			"texturePressed": "play_button_press.png",
-			"x": 213,
+			"x": 113,
 			"y": 150
 		},
 		
@@ -35,14 +35,14 @@
 			{
 				"texture": "btn1.png",
 				"texturePressed": "btn1Press.png",
-				"x": 335,
+				"x": 235,
 				"y": 250,
 				"url": "https://google.de"
 			},
 			{
 				"texture": "btn2.png",
 				"texturePressed": "btn2Press.png",
-				"x": 405,
+				"x": 305,
 				"y": 250,
 				"url": "https://youtube.com"
 			}
@@ -56,7 +56,7 @@
 		
 		"score":{
 			"preText": "Score: ",
-			"x": 795,
+			"x": 595,
 			"y": 5,
 			"anchorX": 1,
 			"anchorY": 0,
@@ -111,6 +111,8 @@
 				],
 			"allowedJumpHeight": 2,
 			"gapThreshhold": 5,
+			"minEnemiesPerPlatform": 0,
+			"maxEnemiesPerPlatform": 2,
 			"spritesheet": "wall.json",
 			"slicetypes":{
 				"edge":[
@@ -130,7 +132,7 @@
 			}
 		},
 		
-		"player": "player.json",
+		"player": "char.json",
 		
 		"damageFlash":{
 			"texture": "damage.jpg",
@@ -145,8 +147,14 @@
 	},
 	
 	"gameover":{
+		"backgrund": "black.png",
+		"backgroundOpacity": 0.5,
 		"gameovertext":{
 			"text": "You are dead",
+			"x": 300,
+			"y": 25,
+			"anchorX": 0.5,
+			"anchorY": 0,
 			"style":{
 				"font": "bold 32px Podkova", 
 				"fill": "#ffffff", 
@@ -159,14 +167,25 @@
 		"retybutton":{
 			"texture": "retry.png",
 			"texturePressed": "retryPressed.png",
-			"x": 0,
-			"y": 0
+			"x": 300,
+			"y": 250,
+			"anchorX": 0.5,
+			"anchorY": 0
 		},
 		
 		"score":{
-			"preText": "Score: ",
-			"x": 0,
-			"y": 150
+			"preText": "Reached score: ",
+			"x": 300,
+			"y": 150,
+			"anchorX": 0.5,
+			"anchorY": 0,
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
 		}
 	}
 }

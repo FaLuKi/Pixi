@@ -1,4 +1,28 @@
-{"frames": {
+{
+"player":{
+	"health": 2,
+	"offsetY": -15,
+	
+	"animationThresh": 10,
+	
+	"walkcycle": ["walk_01", "walk_02", "walk_03", "walk_04", "walk_05", "walk_06", "walk_07", "walk_08", "walk_09", "walk_10"],
+	"walksound": "sound/concrete1.wav",
+	"walksoundvolume": 0.5,
+	
+	"damagesound": "sound/pain.wav",
+	"damagesoundvolume": 0.5,
+	
+	"jumpcycle": ["jump_01", "jump_02"],
+	"jumpsound": "sound/jump.m4a",
+	"jumpsoundvolume": 0.08,
+	
+	"jumpspeed": 5,
+	"jumplength": 30,
+	
+	"fallcycle": ["walk_01", "walk_02"],
+	"fallspeed": 3
+},
+"frames": {
 
 "walk_01":
 {
