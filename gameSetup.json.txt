@@ -1,0 +1,192 @@
+{
+	"game":{ // benutzt zur initialisierung vom main objekt
+		"height": 350, //renderer höhe
+		"width": 600, //renderer breite
+		"minScrollSpeed": 2, 
+		"maxScrollSpeed": 10,
+		"scrollSpeedAcceleration": 0.0015
+	},
+	
+	"mainMenu":{ //initialisierung object MainMenu
+		"gameTitle": { //titel der angezeigt wird
+			"text": "Scrolling around",
+			"x": 300, //wo auf x achse
+			"y": 30, // wo y achse
+			"anchorX": 0.5, //ankerpunkt, hier ist der auf der mitte des text objects (x-achse)
+			"anchorY": 0,
+			"style":{
+				"font": "bold 75px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
+		"backgroundTexture": "menuBackground.png", // hintergrundbild, wenn textur zu klein ist tiled das, wie die hintergründe im spiel
+		
+		"startButton":{ //startbutton zum spiel starten
+			"texture": "play_button.png",
+			"texturePressed": "play_button_press.png",
+			"x": 113,
+			"y": 150
+		},
+		
+		"additionalButtons":[  // zusätzliche buttons für intzernet adressen
+			{
+				"texture": "btn1.png",
+				"texturePressed": "btn1Press.png",
+				"x": 235,
+				"y": 250,
+				"url": "https://google.de"
+			},
+			{
+				"texture": "btn2.png",
+				"texturePressed": "btn2Press.png",
+				"x": 305,
+				"y": 250,
+				"url": "https://youtube.com"
+			}
+		]
+	},
+	
+	"sideScroller":{  //initialisierung für Scroller objekt
+		"controls":{
+			"jump": 38  // taste für hüpfen, 38 = arrow_up
+		},
+		
+		"score":{ //text objekt für den highscore
+			"preText": "Score: ", //Text vor score, z.b. "Score: *viele viele zahlen*"
+			"x": 595, //wo auf x achse
+			"y": 5, //wo auf y achse
+			"anchorX": 1, //ankerpunkt
+			"anchorY": 0,
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
+		
+		"health":{ //text objekt für lebenspunkte
+			"preText": "Health: ",
+			"x": 0,
+			"y": 40,
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
+		
+		"farBackground":{ //der "am weitenste hintere" hintergrund objekt, ist tilingsprite
+			"texture": "bg-far.png",
+			"height": 256, //höhe der textur
+			"y": 0,
+			"deltaX": 0.064 // scroll geschwindigkeit
+		},
+		
+		"nearBackground":{
+			"texture": "bg-mid.png",
+			"height": 256,
+			"y": 128,  // offset zum oberen rand
+			"deltaX": 0.32
+		},
+		
+		"mapGenerator":{  // initialisierung MagBuilder objekt
+			"tileWidth": 64, //wie breit ist ein tile?
+			"minPlatformLength": 1, 
+			"maxPlatformLength": 8,
+			"allowSteppedPlatforms": true,  // erlaube stufen in platformen
+			"steppedPlatformsChance": 0.20, // 20% chance auf stufenplatform
+			"platformHeights": [  // zulässige höhen der platform, SORTIERT VON HOCH NACH TIEF
+				256,
+				224,
+				192,
+				160,
+				128
+				],
+			"allowedJumpHeight": 2,  //wie viele Höhen indexe dürfen übersprungen werden, hier im bsp: 256 -> 192 erlaubt, 256 -> 160 verboten
+			"gapThreshhold": 5, // geschwindigkeit durch gapthreshold, größe der lücke bei geschwindigkeit 2 ist eine TileBreite, bei geschwindigkeit 10 sind es dann 3 TileBreiten
+			"minEnemiesPerPlatform": 0,
+			"maxEnemiesPerPlatform": 2,
+			"spritesheet": "wall.json",
+			"slicetypes":{ //wichtig, es werden alle 3 arten benötigt für gestufte platformen. Edge und decoration aber nicht Step für nur gerade platformen. Alles frame namen, die in der wall.json definiert werden
+				"edge":[
+					"edge_01",
+					"edge_02"
+				],
+				"decoration":[
+					"decoration_01",
+					"decoration_02",
+					"decoration_03",
+					"window_01",
+					"window_02"
+				],
+				"step":[
+					"step_01"
+				]
+			}
+		},
+		
+		"player": "char.json",  // character json objekt, ist ein string, wird aber später mit einem objekt erstetzt, bekommt nutzer aber nicht mit
+		
+		"damageFlash":{  // der "ouch" auf flash wenn man schaden nimmt
+			"texture": "damage.jpg",
+			"duration": 1,  // dauer in sekunden
+			"initialFlashAlpha": 0.5 //1 = komplett undurchsichtig, 0 kommplet durchsichtig.  Vom angegeben wert zu 0 dauert es immer so lange wie die duration angegeben ist. z.b. 1 -> 0 mit duration 2 sind von 1 -> 0 in 2 sekunden.
+											bei 0.5 -> 0 und duration 2 dauert 0.5 -> 0 AUCH 2 sekunden
+		},
+		
+		"enemies":[ // angabe der gegnrt json dateien. die strings werden intern mit objekten erstetzt, aber das bekommt der nutzer nciht mit.
+			"enemy1.json",
+			"enemy2.json"
+		]
+	},
+	
+	"gameover":{  // game over bildschirm
+		"backgrund": "black.png",  //tiling sprite, wie mainmenu hintergrund
+		"backgroundOpacity": 0.5,
+		"gameovertext":{
+			"text": "You are dead",
+			"x": 300,
+			"y": 25,
+			"anchorX": 0.5,
+			"anchorY": 0,
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		},
+		
+		"retrybutton":{ // wie main menu buttons
+			"texture": "retry.png",
+			"texturePressed": "retryPressed.png",
+			"x": 300,
+			"y": 250,
+			"anchorX": 0.5,
+			"anchorY": 0
+		},
+		
+		"score":{ // wie eigentlich jeder definierte text
+			"preText": "Reached score: ",
+			"x": 300,
+			"y": 150,
+			"anchorX": 0.5,
+			"anchorY": 0,
+			"style":{
+				"font": "bold 32px Podkova", 
+				"fill": "#ffffff", 
+				"align": "center", 
+				"stroke": "#000000", 
+				"strokeThickness": 6
+			}
+		}
+	}
+}
