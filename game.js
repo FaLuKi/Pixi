@@ -1226,7 +1226,7 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 			main.scroller.enemyPool.push(new Enemy(viewport, key));
 		}
 		
-		var gapThresh =  Math.floor(main.scrollSpeed / gameSetup.sideScroller.mapGenerator.gapThreshhold);
+		var gapThresh =  Math.floor(main.scrollSpeed / gameSetup.sideScroller.mapGenerator.gapThreshhold) + 1;
 		
 		for(var i = 0; i < gapThresh; i++){
 			this.createGap(1);
