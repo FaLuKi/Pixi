@@ -1,10 +1,11 @@
+//Initializes the whole game with included json-file for game setup, character and enemies.
 function init() {
 	$.getJSON('gameSetup.json', function(data) {
-		//read the gameSetup json and transform it into an object for easy usage withing JS
+		//reads the gameSetup-json and transforms it into an object for easy usage within JS
 		gameSetup = data;
 		gameSetup.assetsToLoad = [];
 		
-		//push json locations into an array, with these files sprites and objects will be generated
+		//push json locations into an array. with these, files, sprites and objects will be generated
 		gameSetup.assetsToLoad.push("resources/" + gameSetup.sideScroller.player);
 		gameSetup.assetsToLoad.push("resources/" + gameSetup.sideScroller.mapGenerator.spritesheet);
 		for(var enemy of gameSetup.sideScroller.enemies){
@@ -26,7 +27,7 @@ function init() {
 		main.mainMenu = new MainMenu();
 	});
 }
-
+//Updates the animation frame
 function update(){
 	// scroller.moveViewportXBy(5);
 	
@@ -45,15 +46,18 @@ var gameSetup;
 
 
 //##############
-
+//The Far()-object for the farest background as shown in the documentation
 function Far(){
+	//loads the texture in the "resources"/" path
 	var farTexture = PIXI.Texture.fromImage("resources/" + gameSetup.sideScroller.farBackground.texture);
+	//sets object as TilingSprite
 	PIXI.TilingSprite.call(this, farTexture, gameSetup.game.width, gameSetup.sideScroller.farBackground.height);
 	this.position.x = 0;
 	this.position.y = gameSetup.sideScroller.farBackground.y;
 	this.tilePosition.x = 0;
 	this.tilePosition.y = 0;
 	this.viewportX = 0;
+	//sets the scroll-speed
 	this.DELTA_X = gameSetup.sideScroller.farBackground.deltaX;
 }
 
@@ -61,6 +65,7 @@ Far.constructor = Far;
 Far.prototype = Object.create(PIXI.TilingSprite.prototype);
 // Far.DELTA_X = 0.064;
 
+//updates the viewport-position
 Far.prototype.setViewportX = function(newViewportX) {
 	var distanceTravelled = newViewportX - this.viewportX;
 	this.viewportX = newViewportX;
@@ -69,6 +74,8 @@ Far.prototype.setViewportX = function(newViewportX) {
 
 // ##################
 
+//The Mid()-Object for the middle background as shown in the documentation
+//analogue to the Far()-Object
 function Mid(){
 	var midTexture = PIXI.Texture.fromImage("resources/" + gameSetup.sideScroller.nearBackground.texture);
 	PIXI.TilingSprite.call(this, midTexture, gameSetup.game.width, gameSetup.sideScroller.nearBackground.height);
@@ -91,14 +98,16 @@ Mid.prototype.setViewportX = function(newViewportX) {
 
 // ##################
 //main menu
-
+//MainMenu()-object for the main menu
 function MainMenu(){
+	//sets the state for other objects
 	state = "mainmenu";
-	
-	var backgroundTexture = new PIXI.Texture.fromImage("resources/" + gameSetup.mainMenu.backgroundTexture);
+	//loads the background texture and sets it as Pixi.TilingSprite
+		var backgroundTexture = new PIXI.Texture.fromImage("resources/" + gameSetup.mainMenu.backgroundTexture);
 	this.background = new PIXI.TilingSprite(backgroundTexture, gameSetup.game.width, gameSetup.game.height);
 	main.stage.addChild(this.background);
 	
+	//sets the game Title with css properties for font, fill, align, stroke, strokeThickness, anchor and position
 	this.gameTitle = new PIXI.Text(gameSetup.mainMenu.gameTitle.text, {
 		font: gameSetup.mainMenu.gameTitle.style.font, 
 		fill: gameSetup.mainMenu.gameTitle.style.fill, 
@@ -113,6 +122,7 @@ function MainMenu(){
 	this.gameTitle.position.y = gameSetup.mainMenu.gameTitle.y;
 	main.stage.addChild(this.gameTitle);
 	
+	//Sets the start button for playing the game
 	var x = gameSetup.mainMenu.startButton.x;
 	var y = gameSetup.mainMenu.startButton.y;
 	var texture = gameSetup.mainMenu.startButton.texture;
@@ -129,6 +139,7 @@ function MainMenu(){
 		main.loadSpriteSheet();
 	}
 	
+	//sets additional buttons for facebook or similar, if wished
 	this.additionalButtons = [];
 	for (var button of gameSetup.mainMenu.additionalButtons){
 		var addBut = new this.createButton("resources/" + button.texture, "resources/" + button.texturePressed, button.x, button.y);
@@ -138,7 +149,7 @@ function MainMenu(){
 		this.additionalButtons.push(addBut);
 	}
 }
-
+//sets buttons for the main menu with position, hover effects etc
 MainMenu.prototype.createButton = function(texture, pressTexture, x, y){
 	var button = new PIXI.Sprite(PIXI.Texture.fromImage(texture));
 	
@@ -188,7 +199,11 @@ MainMenu.prototype.createButton = function(texture, pressTexture, x, y){
 
 // ##################
 
+//Scroller Object
+//defines the main Object which loads all ressources for playing the game
+
 function Scroller(stage) {
+	///loads the far, mid and front layer
 	this.far =  new Far("resources/bg-far.png", 512, 256);
 	stage.addChild(this.far);
 	
@@ -198,6 +213,7 @@ function Scroller(stage) {
 	this.front = new Walls();
 	stage.addChild(this.front);
 	
+	//creates the slices
 	this.mapBuilder = new MapBuilder(this.front);
 	
 	this.char = new Character();
@@ -234,6 +250,7 @@ function Scroller(stage) {
 	
 	this.viewportX = 0;
 	
+	//keyboard inputs
 	this.up = keyboard(38);
 	this.up.press = this.jumpDown;
 	this.up.release = this.jumpUp;
@@ -241,6 +258,7 @@ function Scroller(stage) {
 	main.stage.mousedown = main.stage.touchstart = this.jumpDown;
 	main.stage.mouseup = main.stage.touchend = this.jumpUp;
 	
+	//sets the state for other objects to communicate
 	state = "play";
 }
 
@@ -257,7 +275,7 @@ Scroller.prototype.jumpUp = function(){
 	if(state == "dead") return;
 	state = "falling";
 }
-
+//updates the ViewportX
 Scroller.prototype.setViewportX = function(viewportX) {
 	this.viewportX = viewportX;
 	this.mapBuilder.setViewportX(viewportX);
@@ -291,7 +309,7 @@ Scroller.prototype.getViewportX = function() {
 
 //###############
 //Enemy
-
+//Enemy object with "pos" as position and "walkspeed" for moving speed
 function Enemy(pos,walkspeed){
 	// var firstX = -(main.scroller.viewportX % 64);
 	this.start = pos;
@@ -311,6 +329,7 @@ function Enemy(pos,walkspeed){
 	this.state = "walking";
 }
 
+//sets the viewport of the enemy
 Enemy.prototype.setViewportX = function(newViewportX) {
 	this.viewportX = newViewportX;
 	if(this.start - newViewportX <= 0){
@@ -365,24 +384,25 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 				this.setPosY(this.position.y + this.fallspeed);
 			}
 		}
-		
+		//char loses one hitpoint if colliding with enemy
 		if(this.isColliding()){
 			main.scroller.char.takeDamage(1);
 		}
 	}
 }
-
+//method checks if enemy is colliding with player
 Enemy.prototype.isColliding = function(){
 	var char = main.scroller.char;
 	return !(char.position.x > (this.position.x + this.sprite.width) || (char.position.x + char.sprite.width) < this.position.x || 
 		char.position.y > (this.position.y + this.sprite.height) || (char.position.y + char.sprite.height) < this.position.y);
 }
 
+//sets the right y position of enemy
 Enemy.prototype.setPosY = function(pos){
 	this.position.y = pos;
 	this.sprite.position.y = pos;
 }
-
+//method for destroying the enemy 
 Enemy.prototype.destroy = function(pos){
 	main.stage.removeChild(this.sprite);
 			
@@ -395,8 +415,7 @@ Enemy.prototype.setPosX = function(pos){
 	this.sprite.position.x = pos;
 }
 //###############
-//character
-
+//character Object with properties like position, fallspeed, jumpspeed, jumplength, different sounds, etc
 function Character(){
 	this.position = {};
 	this.position.x = gameSetup.sideScroller.mapGenerator.tileWidth / 2;
@@ -446,7 +465,7 @@ function Character(){
 // Character.constructor = Character;
 // Character.prototype = Object.create(PIXI.Sprite.prototype);
 
-
+//if Character collides with enemy, this method will be called for getting damage
 Character.prototype.takeDamage = function(amount){
 	if(this.isInvul || state =="dead") return;
 	this.health -= amount;
@@ -465,10 +484,12 @@ Character.prototype.takeDamage = function(amount){
 	}, this.invulTime * 1000);
 }
 
+//sets the right character position
 Character.prototype.setPosY = function(pos){
 	this.position.y = pos;
 	this.sprite.position.y = pos;
 }
+//sets the first animationsprite for character
 Character.prototype.bindSprite = function(){
 	this.sprite = PIXI.Sprite.fromFrame("walk_01");
 	this.sprite.position.x = this.position.x;
@@ -478,6 +499,7 @@ Character.prototype.bindSprite = function(){
 	state = "play";
 }
 
+//viewportX method for character
 Character.prototype.setViewportX = function(newViewportX) {
 	this.viewportX = newViewportX;
 
@@ -576,7 +598,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 };
 
 // ####################
-
+//function for keyboard input
 function keyboard(keyCode) {
   var key = {};
   key.code = keyCode;
@@ -614,7 +636,7 @@ function keyboard(keyCode) {
   return key;
 }
 // ####################
-
+//the main Object which creates the Stage with width, heigth and initial scrollspeed
 function Main() {
 	this.stage = new PIXI.Stage(0x000000);
 	this.stage.interactive = true;
