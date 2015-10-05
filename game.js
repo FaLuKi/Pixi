@@ -141,14 +141,22 @@ function MainMenu(){
 	
 	//sets additional buttons for facebook or similar, if wished
 	this.additionalButtons = [];
-	for (var button of gameSetup.mainMenu.additionalButtons){
-		var addBut = new this.createButton("resources/" + button.texture, "resources/" + button.texturePressed, button.x, button.y);
-		addBut.click = addBut.tap = function(){
-			window.open(button.url, '_blank');
+	for (var key in gameSetup.mainMenu.additionalButtons){
+		var addBut = this.createButton("resources/" + gameSetup.mainMenu.additionalButtons[key].texture, 
+			"resources/" + gameSetup.mainMenu.additionalButtons[key].texturePressed, 
+			gameSetup.mainMenu.additionalButtons[key].x, 
+			gameSetup.mainMenu.additionalButtons[key].y);
+		addBut.url = gameSetup.mainMenu.additionalButtons[key].url;
+		
+		addBut.openUrl = function(){
+			window.open(this.url, '_blank')
 		};
+		
+		addBut.click = addBut.tap = addBut.openUrl;
 		this.additionalButtons.push(addBut);
 	}
 }
+
 //sets buttons for the main menu with position, hover effects etc
 MainMenu.prototype.createButton = function(texture, pressTexture, x, y){
 	var button = new PIXI.Sprite(PIXI.Texture.fromImage(texture));
