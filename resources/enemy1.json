@@ -1,6 +1,6 @@
 {
 "enemy":{
-	"offsetY": 5,
+	"offsetY": 12.5,
 	"damage": 1,
 	"animationThresh": 10,
 	

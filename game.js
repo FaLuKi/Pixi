@@ -18,10 +18,16 @@ function init() {
 		});
 		
 		for(var key in gameSetup.sideScroller.enemies){
-			console.log(gameSetup.sideScroller.enemies[key]);
-			$.getJSON("resources/" + gameSetup.sideScroller.enemies[key], function(data) {
-				gameSetup.sideScroller.enemies[key] = data.enemy;
-			});
+			
+			(function(key) {
+				$.getJSON("resources/" + gameSetup.sideScroller.enemies[key], function(data) {
+					gameSetup.sideScroller.enemies[key] = data.enemy;
+				});
+			})(key);
+			
+			// $.getJSON("resources/" + gameSetup.sideScroller.enemies[key], function(data) {
+				// gameSetup.sideScroller.enemies[key] = data.enemy;
+			// });
 		}
 		
 		main = new Main();
@@ -340,7 +346,12 @@ function Enemy(pos,index){
 	
 	this.minWalkSpeed = gameSetup.sideScroller.enemies[index].minWalkSpeed;
 	this.maxWalkSpeed = gameSetup.sideScroller.enemies[index].maxWalkSpeed;
-	this.walkspeed = (Math.random() * (this.maxWalkSpeed - this.minWalkSpeed)) + this.minWalkSpeed;
+	
+	if(this.minWalkSpeed == 0 && this.maxWalkSpeed == 0){
+		this.walkspeed = 0;
+	}else{		
+		this.walkspeed = Math.random() * (this.maxWalkSpeed - this.minWalkSpeed + 1) + this.minWalkSpeed;
+	}
 	
 	this.fallspeed = gameSetup.sideScroller.enemies[index].fallspeed;
 	this.fallcycle = gameSetup.sideScroller.enemies[index].fallcycle;
@@ -719,7 +730,7 @@ Main.prototype.createDeathscreen = function(){
 		this.deathScreen.width = gameSetup.game.width;
 		this.deathScreen.height = gameSetup.game.height;
 		
-		var backgroundTexture = new PIXI.Texture.fromImage("resources/" + gameSetup.gameover.backgrund);
+		var backgroundTexture = new PIXI.Texture.fromImage("resources/" + gameSetup.gameover.background);
 		this.background = new PIXI.TilingSprite(backgroundTexture, gameSetup.game.width, gameSetup.game.height);
 		this.background.alpha = gameSetup.gameover.backgroundOpacity;
 		this.deathScreen.addChild(this.background);
@@ -1140,6 +1151,10 @@ MapBuilder.WALL_HEIGHTS = [
   // 128  // Highest slice
 ];
 
+MapBuilder.prototype.randomBetween = function(high, low){
+	return Math.random()*(high-low+1)+low;
+}
+
 //function for adding new tiles before the player can see the last tile on screen
 MapBuilder.prototype.setViewportX = function(viewportX){
 	//generate new platforms if player is two viewport widths away from the last platform.
@@ -1185,13 +1200,14 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 		}
 		
 		//place randomly enemies on the new platform
-		var rngEnemyCount = Math.floor( (Math.random() * this.maxEnemiesPerPlatform - this.minEnemiesPerPlatform) + this.minPlatformLength);
-		var lastSlice = main.scroller.front.slices.length;
+		var rngEnemyCount = Math.round( this.randomBetween(this.maxEnemiesPerPlatform, this.minEnemiesPerPlatform));
+		var lastSlice = main.scroller.front.slices.length - 1;
 		var firstSlice = main.scroller.front.slices.length - rngLength;
+		// console.log("Spawning: " +rngEnemyCount);
 		for(var i=0; i < rngEnemyCount; i++){
 			//get the viewport in which the enemy should "spawn"
 			//first get the the value corresponding to the slice index
-			var viewport = (Math.random() * lastSlice) + firstSlice;
+			var viewport = this.randomBetween(lastSlice, firstSlice);
 			
 			//if we would convert this to viewport now the enemy would spawn when the player reaches said viewport value
 			//the result would be the enemy would spawn on later platforms without any guarantee that it will spawn on one or not

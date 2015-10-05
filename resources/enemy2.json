@@ -1,0 +1,33 @@
+{
+"enemy":{
+	"offsetY": 12.5,
+	"damage": 1,
+	"animationThresh": 10,
+	
+	"walkcycle": ["enemy2_01"],
+	
+	"fallcycle": ["enemy2_01"],
+	"fallspeed": 10,
+	
+	"minWalkSpeed": 0,
+	"maxWalkSpeed": 0
+	
+},
+"frames": {
+	"enemy2_01":
+	{
+		"frame": {"x":0,"y":0,"w":20,"h":49},
+		"rotated": false,
+		"trimmed": true,
+		"spriteSourceSize": {"x":0,"y":1,"w":20,"h":10},
+		"sourceSize": {"w":20,"h":49}
+	}
+},
+"meta": {
+	"version": "1.0",
+	"image": "enemy2.png",
+	"format": "RGBA8888",
+	"size": {"w":600,"h":520},
+	"scale": "1.0"
+}
+}

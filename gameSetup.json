@@ -98,8 +98,8 @@
 		
 		"mapGenerator":{
 			"tileWidth": 64,
-			"minPlatformLength": 1,
-			"maxPlatformLength": 8,
+			"minPlatformLength": 5,
+			"maxPlatformLength": 15,
 			"allowSteppedPlatforms": true,
 			"steppedPlatformsChance": 0.20,
 			"platformHeights": [
@@ -141,12 +141,13 @@
 		},
 		
 		"enemies":[
-			"enemy1.json"
+			"enemy1.json",
+			"enemy2.json"
 		]
 	},
 	
 	"gameover":{
-		"backgrund": "black.png",
+		"background": "black.png",
 		"backgroundOpacity": 0.5,
 		"gameovertext":{
 			"text": "You are dead",
