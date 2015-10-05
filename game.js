@@ -141,14 +141,22 @@ function MainMenu(){
 	
 	//sets additional buttons for facebook or similar, if wished
 	this.additionalButtons = [];
-	for (var button of gameSetup.mainMenu.additionalButtons){
-		var addBut = new this.createButton("resources/" + button.texture, "resources/" + button.texturePressed, button.x, button.y);
-		addBut.click = addBut.tap = function(){
-			window.open(button.url, '_blank');
+	for (var key in gameSetup.mainMenu.additionalButtons){
+		var addBut = this.createButton("resources/" + gameSetup.mainMenu.additionalButtons[key].texture, 
+			"resources/" + gameSetup.mainMenu.additionalButtons[key].texturePressed, 
+			gameSetup.mainMenu.additionalButtons[key].x, 
+			gameSetup.mainMenu.additionalButtons[key].y);
+		addBut.url = gameSetup.mainMenu.additionalButtons[key].url;
+		
+		addBut.openUrl = function(){
+			window.open(this.url, '_blank')
 		};
+		
+		addBut.click = addBut.tap = addBut.openUrl;
 		this.additionalButtons.push(addBut);
 	}
 }
+
 //sets buttons for the main menu with position, hover effects etc
 MainMenu.prototype.createButton = function(texture, pressTexture, x, y){
 	var button = new PIXI.Sprite(PIXI.Texture.fromImage(texture));
@@ -661,10 +669,9 @@ Main.constructor = Main;
 // Main.MAX_SCROLL_SPEED = 10;
 // Main.SCROLL_ACCELERATION = 0.0015;
 
-//method for calling the death screen
 Main.prototype.createDeathscreen = function(){
 		this.deathScreen = new PIXI.DisplayObjectContainer();
-		//loads ressources for deathscreen: sprites css properties etc
+		
 		this.deathScreen.width = gameSetup.game.width;
 		this.deathScreen.height = gameSetup.game.height;
 		
@@ -673,7 +680,6 @@ Main.prototype.createDeathscreen = function(){
 		this.background.alpha = gameSetup.gameover.backgroundOpacity;
 		this.deathScreen.addChild(this.background);
 		
-		//shows the reached score
 		this.score = new PIXI.Text(gameSetup.gameover.score.preText + main.scroller.scoreCount, {
 			font: gameSetup.gameover.score.style.font, 
 			fill: gameSetup.gameover.score.style.fill, 
@@ -686,7 +692,6 @@ Main.prototype.createDeathscreen = function(){
 		this.score.anchor.y = gameSetup.gameover.score.anchorY;
 		this.deathScreen.addChild(this.score);
 		
-		//shows the game over text
 		this.gameovertext = new PIXI.Text(gameSetup.gameover.gameovertext.text, {
 			font: gameSetup.gameover.gameovertext.style.font, 
 			fill: gameSetup.gameover.gameovertext.style.fill, 
@@ -698,14 +703,11 @@ Main.prototype.createDeathscreen = function(){
 		this.gameovertext.anchor.x = gameSetup.gameover.gameovertext.anchorX;
 		this.gameovertext.anchor.y = gameSetup.gameover.gameovertext.anchorY;
 		this.deathScreen.addChild(this.gameovertext);
-		
-		//draws the retry button	
+			
 		this.retryButton = main.mainMenu.createButton("resources/" + gameSetup.gameover.retrybutton.texture, "resources/" + gameSetup.gameover.retrybutton.texturePressed, gameSetup.gameover.retrybutton.x, gameSetup.gameover.retrybutton.y);
 		this.retryButton.anchor.x = gameSetup.gameover.retrybutton.anchorX;
 		this.retryButton.anchor.y = gameSetup.gameover.retrybutton.anchorY;
 		this.retryButton.click = this.retryButton.tap = function(data){
-		
-			//if clicked, the deathscreen will be disabled and properties for new game will be set
 			for (var i = main.stage.children.length - 1; i >= 0; i--) {
 				main.stage.removeChild(main.stage.children[i]);
 			}
@@ -716,8 +718,6 @@ Main.prototype.createDeathscreen = function(){
 		
 		main.stage.addChild(this.deathScreen);
 }
-
-//Update method for checking ste state variable
 
 Main.prototype.update = function() {
 	// this.scroller.moveViewportXBy(this.SCROLL_SPEED);
@@ -744,7 +744,6 @@ Main.prototype.update = function() {
 	requestAnimFrame(this.update.bind(this));
 };
 
-//loads spritesheets
 Main.prototype.loadSpriteSheet = function() {
 	// var assetsToLoad = ["resources/wall.json"];
 	loader = new PIXI.AssetLoader(gameSetup.assetsToLoad);
@@ -752,7 +751,6 @@ Main.prototype.loadSpriteSheet = function() {
 	loader.load();
 };
 
-//creates scroller if spritesheets loaded
 Main.prototype.spriteSheetLoaded = function() {
 	this.scroller = new Scroller(this.stage);
 	// requestAnimFrame(this.update.bind(this));
@@ -760,7 +758,6 @@ Main.prototype.spriteSheetLoaded = function() {
 
 // ################
 
-//wallsprites pool which includes the different tiles 
 function WallSpritesPool() {
 	this.createWindows();
 	this.createDecorations();
@@ -768,7 +765,7 @@ function WallSpritesPool() {
 	this.createBackEdges();
 	this.createSteps();
 }
-//creates window tiles for the wallsprites pool and shuffles them
+
 WallSpritesPool.prototype.createWindows = function() {
 	this.windows = [];
 
@@ -777,7 +774,6 @@ WallSpritesPool.prototype.createWindows = function() {
 
 	this.shuffle(this.windows);
 };
-//creates decoration tiles for the wallsprites pool and shuffles them
 
 WallSpritesPool.prototype.createDecorations = function() {
 	this.decorations = [];
@@ -793,8 +789,6 @@ WallSpritesPool.prototype.createDecorations = function() {
 	this.shuffle(this.decorations);
 };
 
-//creates front tiles for the wallsprites pool and shuffles them
-
 WallSpritesPool.prototype.createFrontEdges = function() {
 	this.frontEdges = [];
 	for (var edge of gameSetup.sideScroller.mapGenerator.slicetypes.edge){
@@ -805,8 +799,6 @@ WallSpritesPool.prototype.createFrontEdges = function() {
 
 	this.shuffle(this.frontEdges);
 };
-
-//creates back tiles for the wallsprites pool and shuffles them
 
 WallSpritesPool.prototype.createBackEdges = function() {
 	this.backEdges = [];
@@ -821,10 +813,10 @@ WallSpritesPool.prototype.createBackEdges = function() {
 	this.shuffle(this.backEdges);
 };
 
-//methods for creating, borrowing and returning different tiles
 WallSpritesPool.prototype.borrowWindow = function() {
 	return this.windows.shift();
 };
+
 WallSpritesPool.prototype.returnWindow = function(sprite) {
 	this.windows.push(sprite);
 };
@@ -893,7 +885,6 @@ WallSpritesPool.prototype.returnStep = function(sprite) {
   this.steps.push(sprite);
 };
 
-//method for shuffling tile array
 WallSpritesPool.prototype.shuffle = function(array) {
 	var len = array.length;
 	var shuffles = len * 3;
@@ -923,7 +914,6 @@ WallSpritesPool.prototype.returnBackEdge = function(sprite) {
 
 // ################
 
-//global variables for slice types
 function SliceType() {}
 
 SliceType.FRONT      = 0;
@@ -934,7 +924,7 @@ SliceType.WINDOW     = 4;
 SliceType.GAP        = 5;
 
 // ################
-//object for generating walls
+
 function Walls() {
   PIXI.DisplayObjectContainer.call(this);
   
@@ -968,7 +958,42 @@ Walls.prototype.addSlice = function(sliceType, y) {
   this.slices.push(slice);
 };
 
-//creates a lookup table for borrowing and returning wallsprites
+Walls.prototype.createTestWallSpan = function() {
+  this.addSlice(SliceType.FRONT, 192);
+  this.addSlice(SliceType.WINDOW, 192);
+  this.addSlice(SliceType.DECORATION, 192);
+  this.addSlice(SliceType.WINDOW, 192);
+  this.addSlice(SliceType.DECORATION, 192);
+  this.addSlice(SliceType.WINDOW, 192);
+  this.addSlice(SliceType.DECORATION, 192);
+  this.addSlice(SliceType.WINDOW, 192);
+  this.addSlice(SliceType.BACK, 192);
+};
+
+Walls.prototype.createTestSteppedWallSpan = function() {
+  this.addSlice(SliceType.FRONT, 192);
+  this.addSlice(SliceType.WINDOW, 192);
+  this.addSlice(SliceType.DECORATION, 192);
+ 
+  this.addSlice(SliceType.STEP, 256);
+  this.addSlice(SliceType.WINDOW, 256);
+  this.addSlice(SliceType.BACK, 256);
+};
+
+Walls.prototype.createTestGap = function() {
+  this.addSlice(SliceType.GAP);
+};
+
+Walls.prototype.createTestMap = function() {
+  for (var i = 0; i < 10; i++)
+  {
+    this.createTestWallSpan();
+    this.createTestGap();
+    this.createTestSteppedWallSpan();
+    this.createTestGap();
+  }
+};
+
 Walls.prototype.createLookupTables = function() {
   this.borrowWallSpriteLookup = [];
   this.borrowWallSpriteLookup[SliceType.FRONT] = this.pool.borrowFrontEdge;
@@ -985,17 +1010,14 @@ Walls.prototype.createLookupTables = function() {
   this.returnWallSpriteLookup[SliceType.WINDOW] = this.pool.returnWindow;
 };
 
-//borrows wall slices
 Walls.prototype.borrowWallSprite = function(sliceType) {
   return this.borrowWallSpriteLookup[sliceType].call(this.pool);
 };
 
-//returns wall slices
 Walls.prototype.returnWallSprite = function(sliceType, sliceSprite) {
   return this.returnWallSpriteLookup[sliceType].call(this.pool, sliceSprite);
 };
 
-//sets the viewport 
 Walls.prototype.setViewportX = function(viewportX) {
 	this.viewportX = this.checkViewportXBounds(viewportX);
 	var prevViewportSliceX = this.viewportSliceX;
@@ -1006,7 +1028,7 @@ Walls.prototype.setViewportX = function(viewportX) {
 	this.addNewSlices();
 	// console.log(this.viewportSliceX + "	" + TileHeight);
 };
-//removes slice that has passed the viewport
+
 Walls.prototype.removeOldSlices = function(prevViewportSliceX) {
 	var numOldSlices = this.viewportSliceX - prevViewportSliceX;
 	if (numOldSlices > this.VIEWPORT_NUM_SLICES)
@@ -1025,7 +1047,6 @@ Walls.prototype.removeOldSlices = function(prevViewportSliceX) {
 	}
 };
 
-//adds new slices 
 Walls.prototype.addNewSlices = function() {
 	var firstX = -(this.viewportX % gameSetup.sideScroller.mapGenerator.tileWidth);
   for (var i = this.viewportSliceX, sliceIndex = 0;
@@ -1050,7 +1071,7 @@ Walls.prototype.addNewSlices = function() {
     }
   }
 };
-//checks the viewport bounds 
+
 Walls.prototype.checkViewportXBounds = function(viewportX) {
   var maxViewportX = (this.slices.length - this.VIEWPORT_NUM_SLICES) * gameSetup.sideScroller.mapGenerator.tileWidth;
   if (viewportX < 0)
@@ -1067,7 +1088,6 @@ Walls.prototype.checkViewportXBounds = function(viewportX) {
 
 // #############
 
-//generates the wall map
 function MapBuilder(walls) {
    this.walls = walls;
    MapBuilder.WALL_HEIGHTS = gameSetup.sideScroller.mapGenerator.platformHeights;
@@ -1077,7 +1097,6 @@ function MapBuilder(walls) {
    this.createMap();
 }
 
-//constant variables for different wall heights
 MapBuilder.WALL_HEIGHTS = [
   // 256, // Lowest slice
   // 224,
@@ -1137,7 +1156,7 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 		}
 	}
 }
-//creates the random map
+
 MapBuilder.prototype.createMap = function() {
 	var rngHeight = Math.floor(Math.random() * MapBuilder.WALL_HEIGHTS.length);
 	var rngLength = Math.floor( (Math.random() * this.maxPlatformLength) + this.minPlatformLength + 5);
@@ -1148,7 +1167,6 @@ MapBuilder.prototype.createMap = function() {
 
 };
 
-//creates a gap for jumping
 MapBuilder.prototype.createGap = function(spanLength) { 
   // TileHeight = 5000;
   for (var i = 0; i < spanLength; i++)
@@ -1157,7 +1175,6 @@ MapBuilder.prototype.createGap = function(spanLength) {
   }
 };
 
-//creates a wall span
 MapBuilder.prototype.createWallSpan = function(heightIndex, spanLength, noFront, noBack) {
 	noFront = noFront || false;
 	noBack = noBack || false;
@@ -1180,7 +1197,6 @@ MapBuilder.prototype.createWallSpan = function(heightIndex, spanLength, noFront,
 	}
 };
 
-//creates a step span
 MapBuilder.prototype.createSteppedWallSpan = function(heightIndex, spanALength, spanBLength) {
 	if (heightIndex < 2)
   {
@@ -1191,7 +1207,6 @@ MapBuilder.prototype.createSteppedWallSpan = function(heightIndex, spanALength, 
   this.createWallSpan(heightIndex - 2, spanBLength - 1, true, false);
 };
 
-//methods for adding the different wall types
 MapBuilder.prototype.addWallFront = function(heightIndex) {
   var y = MapBuilder.WALL_HEIGHTS[heightIndex];
   this.walls.addSlice(SliceType.FRONT, y);
