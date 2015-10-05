@@ -133,8 +133,8 @@ function MainMenu(){
 	for (var button of gameSetup.mainMenu.additionalButtons){
 		var addBut = new this.createButton("resources/" + button.texture, "resources/" + button.texturePressed, button.x, button.y);
 		addBut.click = addBut.tap = function(){
-			var win = window.open(button.url, '_blank');
-		}
+			window.open(button.url, '_blank');
+		};
 		this.additionalButtons.push(addBut);
 	}
 }
@@ -674,9 +674,9 @@ Main.prototype.createDeathscreen = function(){
 		this.gameovertext.anchor.y = gameSetup.gameover.gameovertext.anchorY;
 		this.deathScreen.addChild(this.gameovertext);
 			
-		this.retryButton = main.mainMenu.createButton("resources/" + gameSetup.gameover.retybutton.texture, "resources/" + gameSetup.gameover.retybutton.texturePressed, gameSetup.gameover.retybutton.x, gameSetup.gameover.retybutton.y);
-		this.retryButton.anchor.x = gameSetup.gameover.retybutton.anchorX;
-		this.retryButton.anchor.y = gameSetup.gameover.retybutton.anchorY;
+		this.retryButton = main.mainMenu.createButton("resources/" + gameSetup.gameover.retrybutton.texture, "resources/" + gameSetup.gameover.retrybutton.texturePressed, gameSetup.gameover.retrybutton.x, gameSetup.gameover.retrybutton.y);
+		this.retryButton.anchor.x = gameSetup.gameover.retrybutton.anchorX;
+		this.retryButton.anchor.y = gameSetup.gameover.retrybutton.anchorY;
 		this.retryButton.click = this.retryButton.tap = function(data){
 			for (var i = main.stage.children.length - 1; i >= 0; i--) {
 				main.stage.removeChild(main.stage.children[i]);

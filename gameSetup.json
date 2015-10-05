@@ -164,7 +164,7 @@
 			}
 		},
 		
-		"retybutton":{
+		"retrybutton":{
 			"texture": "retry.png",
 			"texturePressed": "retryPressed.png",
 			"x": 300,
