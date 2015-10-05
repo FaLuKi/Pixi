@@ -258,8 +258,8 @@ function Scroller(stage) {
 	// stage.addChild(this.char);
 	
 	this.health = new PIXI.Text("0", {font: gameSetup.sideScroller.health.style.font, fill: gameSetup.sideScroller.health.style.fill, align: gameSetup.sideScroller.health.style.align, stroke: gameSetup.sideScroller.health.style.stroke, strokeThickness: gameSetup.sideScroller.health.style.strokeThickness});
-	this.health.position.x = 5;
-	this.health.position.y = 5;
+	this.health.position.x = gameSetup.sideScroller.health.x;
+	this.health.position.y = gameSetup.sideScroller.health.y;
 	
 	stage.addChild(this.health);
 	
@@ -566,6 +566,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 	this.viewportX = newViewportX;
 
 	if( (state == "play" || state == "jumping" || this.jumplength == -1)&& this.jumpPressed){
+		if(state == "dead") return;
 		this.walksound.pause();
 		if(state == "play" ){
 			state = "jumping";
@@ -1225,9 +1226,9 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 			main.scroller.enemyPool.push(new Enemy(viewport, key));
 		}
 		
-		var gapThresh =  Math.floor(main.scrollSpeed / gameSetup.sideScroller.mapGenerator.allowedJumpHeight);
+		var gapThresh =  Math.floor(main.scrollSpeed / gameSetup.sideScroller.mapGenerator.gapThreshhold);
 		
-		for(var i = 0; i< gapThresh; i++){
+		for(var i = 0; i < gapThresh; i++){
 			this.createGap(1);
 			// console.log("gap: " + i);
 		}
