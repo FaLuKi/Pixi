@@ -9,18 +9,19 @@ function init() {
 		gameSetup.assetsToLoad.push("resources/" + gameSetup.sideScroller.player);
 		gameSetup.assetsToLoad.push("resources/" + gameSetup.sideScroller.mapGenerator.spritesheet);
 		for(var enemy of gameSetup.sideScroller.enemies){
-			// gameSetup.assetsToLoad.push("resources/" + enemy);
+			gameSetup.assetsToLoad.push("resources/" + enemy);
 		}
 		
 		//replace json location strings with actual objects
 		$.getJSON("resources/" + gameSetup.sideScroller.player, function(dataPlayer) {
-			gameSetup.sideScroller.player = dataPlayer;
+			gameSetup.sideScroller.player = dataPlayer.player;
 		});
 		
-		for(var i = 0; i < gameSetup.sideScroller.enemies.length; i++){
-			console.log(gameSetup.sideScroller.enemies[i]);
-			// gameSetup.sideScroller.enemies[i] = $.getJSON("resources/" + gameSetup.sideScroller.enemies[i], function() {}).responseJSON;
-			// gameSetup.assetsToLoad.push("resources/" + enemy);responseJSON
+		for(var key in gameSetup.sideScroller.enemies){
+			console.log(gameSetup.sideScroller.enemies[key]);
+			$.getJSON("resources/" + gameSetup.sideScroller.enemies[key], function(data) {
+				gameSetup.sideScroller.enemies[key] = data.enemy;
+			});
 		}
 		
 		main = new Main();
@@ -227,8 +228,8 @@ function Scroller(stage) {
 	this.char = new Character();
 	
 	this.enemyPool = [];
-	this.enemyPool.push(new Enemy(1450,1));
-	this.enemyPool.push(new Enemy(300,-2.5));
+	this.enemyPool.push(new Enemy(1450,"0"));
+	// this.enemyPool.push(new Enemy(300,"0"));
 	
 	//creat red flash for the indicator that the char took damage.
 	this.damageFlash = new PIXI.Sprite(PIXI.Texture.fromImage("resources/" + gameSetup.sideScroller.damageFlash.texture));
@@ -318,38 +319,51 @@ Scroller.prototype.getViewportX = function() {
 //###############
 //Enemy
 //Enemy object with "pos" as position and "walkspeed" for moving speed
-function Enemy(pos,walkspeed){
-	// var firstX = -(main.scroller.viewportX % 64);
+function Enemy(pos,index){
+	//index is which enemytype in enemyarray
+
 	this.start = pos;
+	
+	this.offsetY = gameSetup.sideScroller.enemies[index].offsetY;
+	this.damage = gameSetup.sideScroller.enemies[index].damage;
+	
+	this.animationThresh = gameSetup.sideScroller.enemies[index].animationThresh;
+	
+	this.walkcycle = gameSetup.sideScroller.enemies[index].walkcycle;
+	this.currentCycleFrame = -1;
+	this.lastwalkcycle = -1;
 	this.sprite = null;
 	
 	this.position = {};
-	this.position.x = 0;
+	this.position.x = gameSetup.game.width;
 	this.position.y = 0;
 	
-	this.walkspeed = walkspeed;
-	this.fallspeed = 5;
+	this.minWalkSpeed = gameSetup.sideScroller.enemies[index].minWalkSpeed;
+	this.maxWalkSpeed = gameSetup.sideScroller.enemies[index].maxWalkSpeed;
+	this.walkspeed = Math.random() * (this.maxWalkSpeed + this.minWalkSpeed) - this.minWalkSpeed;
+	
+	this.fallspeed = gameSetup.sideScroller.enemies[index].fallspeed;
+	this.fallcycle = gameSetup.sideScroller.enemies[index].fallcycle;
 	
 	this.viewportX = 0;
-	
-	this.offsetY = -15;
 	
 	this.state = "walking";
 }
 
 //sets the viewport of the enemy
 Enemy.prototype.setViewportX = function(newViewportX) {
-	this.viewportX = newViewportX;
 	if(this.start - newViewportX <= 0){
+		this.viewportX++;
 		var offsetY = 0;
 		if(this.sprite == null){
-			this.sprite = PIXI.Sprite.fromFrame("enemy_01");
+			this.sprite = PIXI.Sprite.fromFrame(this.walkcycle[0]);
 			if(this.walkspeed < 0){
 				this.sprite.scale.x = -1;
 				this.sprite.anchor.x = 1;
 			}
+			this.sprite.position.x = this.position.x;
 			main.stage.addChild(this.sprite);
-			this.setPosX(gameSetup.game.width);
+			// this.setPosX(gameSetup.game.width);
 			
 			var sliceW = Math.floor(gameSetup.game.width / gameSetup.sideScroller.mapGenerator.tileWidth);
 			var slices = main.scroller.front.slices;
@@ -359,8 +373,8 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 			this.setPosY(offsetY);
 		}
 		// var mod = this.walkingspeed >= 0 ? -1 : 0;
-		var slice1 = main.scroller.front.slices[Math.round(main.scroller.front.viewportSliceX + ( this.position.x / 64))].y || -1;
-		var slice2 = main.scroller.front.slices[Math.ceil(main.scroller.front.viewportSliceX + ( this.position.x / 64))].y || -1;
+		var slice1 = main.scroller.front.slices[Math.round(main.scroller.front.viewportSliceX + ( this.position.x / gameSetup.sideScroller.mapGenerator.tileWidth))].y || -1;
+		var slice2 = main.scroller.front.slices[Math.ceil(main.scroller.front.viewportSliceX + ( this.position.x / gameSetup.sideScroller.mapGenerator.tileWidth))].y || -1;
 		var currentSliceHeight = (slice1 + slice2) / 2; // = slice1 < slice2 ? slice2 : slice1;
 		if(slice1 == -1 || slice2 ==-1){
 			currentSliceHeight = -1;
@@ -392,9 +406,26 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 				this.setPosY(this.position.y + this.fallspeed);
 			}
 		}
-		//char loses one hitpoint if colliding with enemy
+		//char loses hitpoints if colliding with enemy
 		if(this.isColliding()){
-			main.scroller.char.takeDamage(1);
+			main.scroller.char.takeDamage(this.damage);
+		}
+		
+		//change texture for walking animation
+		if(this.walkspeed <= 0){
+			if(this.walkspeed == 0){var speed = 1}
+			else{var speed = -this.walkspeed;}
+		}else{
+			var speed = this.walkspeed;
+		}
+		if(this.walkspeed != 0 && (this.viewportX - this.lastwalkcycle > this.animationThresh / speed)){
+			//animCycleThresh reached, time for a new animation frame
+			this.lastwalkcycle = this.viewportX;
+			
+			if(++this.currentCycleFrame >= this.walkcycle.length){
+				this.currentCycleFrame = 0;
+			}
+			this.sprite.setTexture(PIXI.Texture.fromFrame(this.walkcycle[this.currentCycleFrame]));
 		}
 	}
 }
@@ -430,35 +461,35 @@ function Character(){
 	this.position.y = TileHeight;
 	this.viewportX = 0;
 	
-	this.fallspeed = gameSetup.sideScroller.player.player.fallspeed;
-	this.jumpspeed = gameSetup.sideScroller.player.player.jumpspeed;
-	this.jumplength = gameSetup.sideScroller.player.player.jumplength;
+	this.fallspeed = gameSetup.sideScroller.player.fallspeed;
+	this.jumpspeed = gameSetup.sideScroller.player.jumpspeed;
+	this.jumplength = gameSetup.sideScroller.player.jumplength;
 	this.lastJump = -1;
 	
 	this.lastFallCycleFrame = -1;
 	this.currentFallCycleFrame = -1
-	this.fallcycle = gameSetup.sideScroller.player.player.fallcycle;
+	this.fallcycle = gameSetup.sideScroller.player.fallcycle;
 	
-	this.walkcycle = gameSetup.sideScroller.player.player.walkcycle;
+	this.walkcycle = gameSetup.sideScroller.player.walkcycle;
 	this.lastWalkCycleFrame = -1;
 	this.currentCycleFrame = -1;
-	this.animCycleThresh = gameSetup.sideScroller.player.player.animationThresh;
+	this.animCycleThresh = gameSetup.sideScroller.player.animationThresh;
 	
-	this.jumpcycle = gameSetup.sideScroller.player.player.jumpcycle;
+	this.jumpcycle = gameSetup.sideScroller.player.jumpcycle;
 	this.lastjumpCycleFrame = -1;
 	this.currentjumpCycleFrame = -1;
 	
-	this.jumpsound = new Audio("resources/" + gameSetup.sideScroller.player.player.jumpsound);
-	this.damagesound = new Audio("resources/" + gameSetup.sideScroller.player.player.damagesound);
-	this.walksound = new Audio("resources/" + gameSetup.sideScroller.player.player.walksound);
+	this.jumpsound = new Audio("resources/" + gameSetup.sideScroller.player.jumpsound);
+	this.damagesound = new Audio("resources/" + gameSetup.sideScroller.player.damagesound);
+	this.walksound = new Audio("resources/" + gameSetup.sideScroller.player.walksound);
 	this.walksound.loop = true;
-	this.walksound.volume = gameSetup.sideScroller.player.player.walksoundvolume;
+	this.walksound.volume = gameSetup.sideScroller.player.walksoundvolume;
 	
 	this.health = 2;
 	this.invulTime = 5;
 	this.isInvul = false;
 	
-	this.offsetY = gameSetup.sideScroller.player.player.offsetY;
+	this.offsetY = gameSetup.sideScroller.player.offsetY;
 	
 	this.jumpPressed = false;
 	
@@ -517,7 +548,7 @@ Character.prototype.setViewportX = function(newViewportX) {
 			state = "jumping";
 			this.lastJump = newViewportX;
 			var sound=this.jumpsound.cloneNode();
-			sound.volume = gameSetup.sideScroller.player.player.jumpsoundvolume;
+			sound.volume = gameSetup.sideScroller.player.jumpsoundvolume;
 			sound.play();
 		}
 		if(state == "falling" && this.jumplength == -1){
@@ -755,6 +786,7 @@ Main.prototype.update = function() {
 //loads spritesheets
 Main.prototype.loadSpriteSheet = function() {
 	// var assetsToLoad = ["resources/wall.json"];
+	for (var asset of gameSetup.assetsToLoad) console.log(asset);
 	loader = new PIXI.AssetLoader(gameSetup.assetsToLoad);
 	loader.onComplete = this.spriteSheetLoaded.bind(this);
 	loader.load();
@@ -1082,6 +1114,8 @@ function MapBuilder(walls) {
    this.minPlatformLength = gameSetup.sideScroller.mapGenerator.minPlatformLength;
    this.maxPlatformLength = gameSetup.sideScroller.mapGenerator.maxPlatformLength;
    this.allowSteppedPlatforms = gameSetup.sideScroller.mapGenerator.allowSteppedPlatforms;
+   this.minEnemiesPerPlatform = gameSetup.sideScroller.mapGenerator.minEnemiesPerPlatform;
+   this.maxEnemiesPerPlatform = gameSetup.sideScroller.mapGenerator.maxEnemiesPerPlatform;
    this.createMap();
 }
 
@@ -1098,7 +1132,7 @@ MapBuilder.WALL_HEIGHTS = [
 MapBuilder.prototype.setViewportX = function(viewportX){
 	//generate new platforms if player is two viewport widths away from the last platform.
 	if(this.walls.slices.length < this.walls.viewportSliceX + ((gameSetup.game.width / gameSetup.sideScroller.mapGenerator.tileWidth) * 2)){
-		var stepped = gameSetup.sideScroller.mapGenerator.steppedPlatformsChance > Math.random();
+		var stepped = gameSetup.sideScroller.mapGenerator.steppedPlatformsChance > Math.random() && this.allowSteppedPlatforms;
 		var offset = 1;
 		
 		//go to the last tile that is not a gap
@@ -1137,6 +1171,7 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 			this.createWallSpan(rngHeight, rngLength);
 		}
 		
+		
 		var gapThresh =  Math.floor(main.scrollSpeed / gameSetup.sideScroller.mapGenerator.allowedJumpHeight);
 		
 		for(var i = 0; i< gapThresh; i++){
@@ -1149,7 +1184,7 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 MapBuilder.prototype.createMap = function() {
 	var rngHeight = Math.floor(Math.random() * MapBuilder.WALL_HEIGHTS.length);
 	var rngLength = Math.floor( (Math.random() * this.maxPlatformLength) + this.minPlatformLength + 5);
-	TileHeight = MapBuilder.WALL_HEIGHTS[rngHeight] + gameSetup.sideScroller.player.player.offsetY;
+	TileHeight = MapBuilder.WALL_HEIGHTS[rngHeight] + gameSetup.sideScroller.player.offsetY;
 	this.createWallSpan(rngHeight, rngLength, true);
 	this.createGap(1);
 	// this.createSteppedWallSpan(2, 5, 10);

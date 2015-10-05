@@ -1,16 +1,16 @@
 {
 "enemy":{
-	"offsetY": -15,
-	
+	"offsetY": 5,
+	"damage": 1,
 	"animationThresh": 10,
 	
-	"walk1cycle": ["enemy1_01", "enemy1_02", "enemy1_03", "enemy1_04", "enemy1_05", "enemy1_06", "enemy1_07", "enemy1_08"],
+	"walkcycle": ["enemy1_01", "enemy1_02", "enemy1_03", "enemy1_04", "enemy1_05", "enemy1_06", "enemy1_07", "enemy1_08"],
 	
 	"fallcycle": ["enemy1_01", "enemy1_02"],
 	"fallspeed": 5,
 	
-	"minWalkSpeed": -2,
-	"maxWalkSpeed": 2
+	"minWalkSpeed": 0,
+	"maxWalkSpeed": 0
 	
 },
 "frames": {

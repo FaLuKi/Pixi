@@ -141,8 +141,7 @@
 		},
 		
 		"enemies":[
-			"enemy1.json",
-			"enemy2.json"
+			"enemy1.json"
 		]
 	},
 	
