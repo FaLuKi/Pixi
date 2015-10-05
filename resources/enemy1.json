@@ -9,8 +9,8 @@
 	"fallcycle": ["enemy1_01", "enemy1_02"],
 	"fallspeed": 5,
 	
-	"minWalkSpeed": 0,
-	"maxWalkSpeed": 0
+	"minWalkSpeed": -1,
+	"maxWalkSpeed": 1
 	
 },
 "frames": {

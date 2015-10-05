@@ -1,6 +1,7 @@
 {
 "player":{
-	"health": 2,
+	"health": 10,
+	"invulTime": 1,
 	"offsetY": -15,
 	
 	"animationThresh": 10,

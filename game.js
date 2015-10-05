@@ -228,7 +228,7 @@ function Scroller(stage) {
 	this.char = new Character();
 	
 	this.enemyPool = [];
-	this.enemyPool.push(new Enemy(1450,"0"));
+	// this.enemyPool.push(new Enemy(1450,"0"));
 	// this.enemyPool.push(new Enemy(300,"0"));
 	
 	//creat red flash for the indicator that the char took damage.
@@ -340,7 +340,7 @@ function Enemy(pos,index){
 	
 	this.minWalkSpeed = gameSetup.sideScroller.enemies[index].minWalkSpeed;
 	this.maxWalkSpeed = gameSetup.sideScroller.enemies[index].maxWalkSpeed;
-	this.walkspeed = Math.random() * (this.maxWalkSpeed + this.minWalkSpeed) - this.minWalkSpeed;
+	this.walkspeed = (Math.random() * (this.maxWalkSpeed - this.minWalkSpeed)) + this.minWalkSpeed;
 	
 	this.fallspeed = gameSetup.sideScroller.enemies[index].fallspeed;
 	this.fallcycle = gameSetup.sideScroller.enemies[index].fallcycle;
@@ -367,7 +367,9 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 			
 			var sliceW = Math.floor(gameSetup.game.width / gameSetup.sideScroller.mapGenerator.tileWidth);
 			var slices = main.scroller.front.slices;
-			var sliceHeight = slices[main.scroller.front.viewportSliceX + sliceW].y || -1;
+			
+			//set the enemy ontop of a tile, if it spawned on a gap, kill it
+			var sliceHeight = slices[main.scroller.front.viewportSliceX + sliceW].y || gameSetup.game.height;
 			// console.log(sliceHeight);
 			offsetY = sliceHeight + this.offsetY;
 			this.setPosY(offsetY);
@@ -386,13 +388,23 @@ Enemy.prototype.setViewportX = function(newViewportX) {
 				currentSliceHeight = slice1 < slice2 ? slice2 : slice1;
 			}
 		}
-		// console.log("Enemy: " + Math.floor(main.scroller.front.viewportSliceX + ( this.position.x / 64)) + "	" + currentSliceHeight);
-		if(this.position.x < - this.sprite.width || this.position.y > gameSetup.game.height ){
-			this.destroy();
+		
+		if(this.walkspeed < 0){
+			if(this.position.x < + this.sprite.width || this.position.y > gameSetup.game.height ){
+				this.destroy();
+			}
+		}else{
+			if(this.position.x < - this.sprite.width || this.position.y > gameSetup.game.height ){
+				this.destroy();
+			}
 		}
 		
+		
 		//move enemy in x-axis
-		this.setPosX(this.position.x - (this.walkspeed + main.scrollSpeed));
+		if(state != "dead")
+			this.setPosX(this.position.x - (this.walkspeed + main.scrollSpeed));
+		else
+			this.setPosX(this.position.x - this.walkspeed);
 		
 		if(currentSliceHeight <= -1 || this.state == "falling"){
 			this.state = "falling";
@@ -485,8 +497,8 @@ function Character(){
 	this.walksound.loop = true;
 	this.walksound.volume = gameSetup.sideScroller.player.walksoundvolume;
 	
-	this.health = 2;
-	this.invulTime = 5;
+	this.health = gameSetup.sideScroller.player.health;
+	this.invulTime = gameSetup.sideScroller.player.invulTime;
 	this.isInvul = false;
 	
 	this.offsetY = gameSetup.sideScroller.player.offsetY;
@@ -1160,6 +1172,7 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 			var rngLength1 = Math.floor( (Math.random() * (this.maxPlatformLength/2)) + this.minPlatformLength + 1); //+1 in the end because of the edge sprite 
 			var rngLength2 = Math.floor( (Math.random() * (this.maxPlatformLength/2)) + this.minPlatformLength + 1);
 			this.createSteppedWallSpan(rngHeight, rngLength1, rngLength2);
+			var rngLength = rngLength1 + rngLength2;
 		}else{
 			var rngHeight = Math.floor(Math.random() * MapBuilder.WALL_HEIGHTS.length);
 			//if the height difference it too much take highest allowed tile jump
@@ -1171,6 +1184,30 @@ MapBuilder.prototype.setViewportX = function(viewportX){
 			this.createWallSpan(rngHeight, rngLength);
 		}
 		
+		//place randomly enemies on the new platform
+		var rngEnemyCount = Math.floor( (Math.random() * this.maxEnemiesPerPlatform - this.minEnemiesPerPlatform) + this.minPlatformLength);
+		var lastSlice = main.scroller.front.slices.length;
+		var firstSlice = main.scroller.front.slices.length - rngLength;
+		for(var i=0; i < rngEnemyCount; i++){
+			//get the viewport in which the enemy should "spawn"
+			//first get the the value corresponding to the slice index
+			var viewport = (Math.random() * lastSlice) + firstSlice;
+			
+			//if we would convert this to viewport now the enemy would spawn when the player reaches said viewport value
+			//the result would be the enemy would spawn on later platforms without any guarantee that it will spawn on one or not
+			//we just add a negative offset in corresponse the renderer's width to fix this.
+			viewport -= ((gameSetup.game.width / gameSetup.sideScroller.mapGenerator.tileWidth));
+			//now we multiply it with the TileWidth to get the viewport value at which the enemy should spawn
+			viewport *= gameSetup.sideScroller.mapGenerator.tileWidth;
+			
+			//select a random enemy type
+			//get the keys of the enemytype array
+			var keys = Object.keys(gameSetup.sideScroller.enemies);
+			//select one randomly
+			var key = Math.floor(Math.random() * keys.length );
+			//spawn it and push it into the active enemy pool
+			main.scroller.enemyPool.push(new Enemy(viewport, key));
+		}
 		
 		var gapThresh =  Math.floor(main.scrollSpeed / gameSetup.sideScroller.mapGenerator.allowedJumpHeight);
 		
